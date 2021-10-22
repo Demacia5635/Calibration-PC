@@ -1,7 +1,5 @@
 import sys
 
-import cv2
-
 import GUI.homescreen
 
 from PyQt5.QtWidgets import QApplication, QStackedWidget
