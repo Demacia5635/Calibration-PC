@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout
+from PyQt5.QtGui import QImage, QPixmap, QFont
+from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout
 
 
 class HomeScreen(QDialog):
@@ -15,18 +15,27 @@ class HomeScreen(QDialog):
         super(HomeScreen, self).__init__()
         PyQt5.uic.loadUi("homescreen.ui", self)
 
-        self.disply_width = 640
-        self.display_height = 480
+        self.videos_layout: QHBoxLayout = self.videos_layout
+        # while self.videos_layout.count() > 1:
+        #     item = self.videos_layout.itemAt(0)
+        #     widget = item.widget()
+        #     widget.deleteLater()
+        # self.videos_layout.layout().deleteLater()
+
+        self.display_width = 426
+        self.display_height = 320
 
         # create the label that holds the image
-        self.image_label = QLabel(self)
-        self.image_label.resize(self.disply_width, self.display_height)
+        self.image_label = self.video_label_1 #QLabel(self)
+        # self.image_label.setFont(QFont=QFont("Secular One", 40))
+        self.image_label.resize(self.display_width, self.display_height)
+
         # create a text label
         self.textLabel = QLabel('Webcam')
 
         # create a vertical box layout and add the two labels
         vbox = QVBoxLayout()
-        vbox.addWidget(self.image_label)
+        # vbox.addWidget(self.image_label)
         vbox.addWidget(self.textLabel)
         # set the vbox layout as the widgets layout
         self.setLayout(vbox)
@@ -50,7 +59,7 @@ class HomeScreen(QDialog):
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
         convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.KeepAspectRatio)
+        p = convert_to_Qt_format.scaled(self.display_width, self.display_height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
 
 
