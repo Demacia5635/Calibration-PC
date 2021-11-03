@@ -6,39 +6,37 @@ import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QFont
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow
+
+import image_process
 
 
-class HomeScreen(QDialog):
+class HomeScreen(QMainWindow):
 
     def __init__(self):
         super(HomeScreen, self).__init__()
-        PyQt5.uic.loadUi("homescreen.ui", self)
+        # PyQt5.uic.loadUi("homescreen.ui", self)
 
-        self.videos_layout: QHBoxLayout = self.videos_layout
-        # while self.videos_layout.count() > 1:
-        #     item = self.videos_layout.itemAt(0)
-        #     widget = item.widget()
-        #     widget.deleteLater()
-        # self.videos_layout.layout().deleteLater()
+        self.create_video_labels()
 
-        self.display_width = 426
-        self.display_height = 320
+        title = QLabel("Calibration Program")
+        title.setStyleSheet('font: 48pt "Secular One"; color: rgb(48, 63, 159);')
+        title.setAlignment(Qt.AlignCenter)
 
-        # create the label that holds the image
-        self.image_label = self.video_label_1 #QLabel(self)
-        # self.image_label.setFont(QFont=QFont("Secular One", 40))
-        self.image_label.resize(self.display_width, self.display_height)
+        videos_layout: QHBoxLayout = QHBoxLayout()
 
-        # create a text label
-        self.textLabel = QLabel('Webcam')
+        videos_layout.addWidget(self.video_1)
+        videos_layout.addWidget(self.video_2)
+        videos_layout.addWidget(self.video_3)
 
-        # create a vertical box layout and add the two labels
-        vbox = QVBoxLayout()
-        # vbox.addWidget(self.image_label)
-        vbox.addWidget(self.textLabel)
-        # set the vbox layout as the widgets layout
-        self.setLayout(vbox)
+        v_box = QVBoxLayout()
+        v_box.addWidget(title)
+        v_box.addLayout(videos_layout)
+
+        widget = QWidget()
+        widget.setLayout(v_box)
+        widget.setStyleSheet("background-color: rgb(18, 18, 18);")
+        self.setCentralWidget(widget)
 
         # create the video capture thread
         self.thread = VideoThread()
@@ -50,8 +48,11 @@ class HomeScreen(QDialog):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
-        qt_img = self.convert_cv_qt(cv_img)
-        self.image_label.setPixmap(qt_img)
+        image_1, image_2 = image_process.process_image(cv_img)
+        qt_img_1 = self.convert_cv_qt(image_1)
+        self.video_1.setPixmap(qt_img_1)
+        qt_img_2 = self.convert_cv_qt(image_2)
+        self.video_2.setPixmap(qt_img_2)
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
@@ -61,6 +62,25 @@ class HomeScreen(QDialog):
         convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.display_width, self.display_height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
+
+    def create_video_labels(self):
+        self.video_1 = QLabel("Video 1")
+        self.video_1.setAlignment(Qt.AlignCenter)
+        self.video_1.setObjectName("Video1")
+        self.video_1.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One";')
+
+        self.video_2 = QLabel("Video 2")
+        self.video_2.setAlignment(Qt.AlignCenter)
+        self.video_2.setObjectName("Video2")
+        self.video_2.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One";')
+
+        self.video_3 = QLabel("Video 3")
+        self.video_3.setAlignment(Qt.AlignCenter)
+        self.video_3.setObjectName("Video3")
+        self.video_3.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One";')
+
+        self.display_width = self.video_1.size().width()
+        self.display_height = 320
 
 
 class VideoThread(QThread):
