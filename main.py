@@ -11,8 +11,8 @@ def run_gui():
     homescreen = GUI.homescreen.HomeScreen()
     widget = QStackedWidget()
     widget.addWidget(homescreen)
-    widget.setFixedWidth(1280)
-    widget.setFixedHeight(720)
+    widget.setFixedWidth(1480)
+    widget.setFixedHeight(920)
     widget.show()
 
     try:

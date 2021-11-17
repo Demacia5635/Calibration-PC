@@ -6,9 +6,10 @@ import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QFont
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow
+from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QPushButton
 
 import image_process
+from GUI import buttons
 
 
 class HomeScreen(QMainWindow):
@@ -17,21 +18,77 @@ class HomeScreen(QMainWindow):
         super(HomeScreen, self).__init__()
         # PyQt5.uic.loadUi("homescreen.ui", self)
 
-        self.create_video_labels()
-
         title = QLabel("Calibration Program")
         title.setStyleSheet('font: 48pt "Secular One"; color: rgb(48, 63, 159);')
+        title.setContentsMargins(0,0,0,100)
         title.setAlignment(Qt.AlignCenter)
 
+        # video streams:
         videos_layout: QHBoxLayout = QHBoxLayout()
+        videos_layout.setContentsMargins(0,0,0,100)
 
+        self.create_video_labels()
         videos_layout.addWidget(self.video_1)
         videos_layout.addWidget(self.video_2)
         videos_layout.addWidget(self.video_3)
 
+        # buttons:
+
+        # first layout:
+        buttons_layout_1: QHBoxLayout = QHBoxLayout()
+        buttons_layout_1.setContentsMargins(0, 0, 0, 0)
+        buttons_layout_1.setSpacing(50)
+
+        self.start = QPushButton()
+        self.start.setObjectName("start_button")
+        self.start.setText("Start Calibrate")
+        self.start.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.start.clicked.connect(buttons.calibrate)
+
+        self.add_to = QPushButton()
+        self.add_to.setObjectName("add_to_button")
+        self.add_to.setText("Add To Calibrate")
+        self.add_to.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.add_to.clicked.connect(buttons.add_to_calibrate)
+
+        self.save = QPushButton()
+        self.save.setObjectName("save_button")
+        self.save.setText("Save")
+        self.save.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.save.clicked.connect(buttons.save)
+
+        buttons_layout_1.addWidget(self.start)
+        buttons_layout_1.addWidget(self.add_to)
+        buttons_layout_1.addWidget(self.save)
+
+        # second layout:
+        buttons_layout_2: QHBoxLayout = QHBoxLayout()
+        buttons_layout_2.setContentsMargins(0, 45, 0, 0)
+        buttons_layout_2.setSpacing(100)
+
+        self.trash = QPushButton()
+        self.trash.setObjectName("trash_button")
+        self.trash.setText("Trash")
+        self.trash.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.trash.clicked.connect(buttons.trash)
+
+        self.discard = QPushButton()
+        self.discard.setObjectName("discard_button")
+        self.discard.setText("Discard")
+        self.discard.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.discard.clicked.connect(buttons.discard)
+
+        buttons_layout_2.addWidget(self.trash)
+        buttons_layout_2.addWidget(self.discard)
+
+        # layouts:
         v_box = QVBoxLayout()
+        v_box.addStretch()
         v_box.addWidget(title)
         v_box.addLayout(videos_layout)
+        v_box.addLayout(buttons_layout_1)
+        v_box.addLayout(buttons_layout_2)
+        v_box.addStretch()
 
         widget = QWidget()
         widget.setLayout(v_box)
