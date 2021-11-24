@@ -1,0 +1,7 @@
+background = '#121212'
+primary = '#BB86FC' #'#7505A3'
+primary_variant = '#3700b3'
+primary_bright = '#d691db'
+secondary = '#03dac6'
+secondary_bright = '#03dac4'
+white = 'rgba(255,255,255,0.9)'

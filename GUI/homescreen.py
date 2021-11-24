@@ -3,30 +3,34 @@ import time
 # import PyQt5.uic
 import cv2
 import numpy as np
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QPushButton
 
 import image_process
-from GUI import buttons
+from GUI import buttons, colors
+from GUI.Fonts import fonts
 
 
 class HomeScreen(QWidget):
 
     def __init__(self):
         super(HomeScreen, self).__init__()
+        fonts.setup()
+        self.setWindowTitle("Calibration Program")
         self.setGeometry(300, 150, 1380, 820)
         # PyQt5.uic.loadUi("homescreen.ui", self)
 
         title = QLabel("Calibration Program")
-        title.setStyleSheet('font: 48pt "Secular One"; color: #BB86FC;')  # rgb(48, 63, 159)
-        title.setContentsMargins(0,0,0,100)
+        title.setFont(fonts.open_sans_bold(48))
+        title.setStyleSheet('color: ' + colors.primary + ';')  # rgb(48, 63, 159)
+        title.setContentsMargins(0, 0, 0, 100)
         title.setAlignment(Qt.AlignCenter)
 
         # video streams:
         videos_layout: QHBoxLayout = QHBoxLayout()
-        videos_layout.setContentsMargins(0,0,0,100)
+        videos_layout.setContentsMargins(0, 0, 0, 100)
 
         self.create_video_labels()
         videos_layout.addWidget(self.video_1)
@@ -37,51 +41,48 @@ class HomeScreen(QWidget):
 
         # first layout:
         buttons_layout_1: QHBoxLayout = QHBoxLayout()
-        buttons_layout_1.setContentsMargins(0, 0, 0, 0)
+        buttons_layout_1.setContentsMargins(400, 0, 400, 0)
         buttons_layout_1.setSpacing(50)
 
         self.start = QPushButton()
         self.start.setObjectName("start_button")
         self.start.setText("Start Calibrate")
-        self.start.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.set_button_style(self.start)
         self.start.clicked.connect(buttons.calibrate)
 
         self.add_to = QPushButton()
         self.add_to.setObjectName("add_to_button")
         self.add_to.setText("Add To Calibrate")
-        self.add_to.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.set_button_style(self.add_to)
         self.add_to.clicked.connect(buttons.add_to_calibrate)
+
+        buttons_layout_1.addWidget(self.start)
+        buttons_layout_1.addWidget(self.add_to)
+
+        # second layout:
+        buttons_layout_2: QHBoxLayout = QHBoxLayout()
+        buttons_layout_2.setContentsMargins(420, 45, 420, 0)
+        buttons_layout_2.setSpacing(100)
 
         self.save = QPushButton()
         self.save.setObjectName("save_button")
         self.save.setText("Save")
-        self.save.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.set_button_style(self.save)
         self.save.clicked.connect(buttons.save)
-
-        buttons_layout_1.addWidget(self.start)
-        buttons_layout_1.addWidget(self.add_to)
-        buttons_layout_1.addWidget(self.save)
-
-        # second layout:
-        buttons_layout_2: QHBoxLayout = QHBoxLayout()
-        buttons_layout_2.setContentsMargins(450, 45, 450, 0)
-        buttons_layout_2.setSpacing(100)
 
         self.trash = QPushButton()
         self.trash.setObjectName("trash_button")
         self.trash.setText("Trash")
-        self.trash.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.set_button_style(self.trash)
         self.trash.clicked.connect(buttons.trash)
 
         self.discard = QPushButton()
         self.discard.setObjectName("discard_button")
         self.discard.setText("Discard")
-        self.discard.setStyleSheet('color: #3700B3; font: 16pt "Secular One"; text-align: center;'
-                                   'background-color: #03DAC5;'
-                                   'border-style: outset; border-width: px;'
-                                   'border-radius: 15px; border-color: black; padding: 10px;')
+        self.set_button_style(self.discard)
         self.discard.clicked.connect(buttons.discard)
 
+        buttons_layout_2.addWidget(self.save)
         buttons_layout_2.addWidget(self.trash)
         buttons_layout_2.addWidget(self.discard)
 
@@ -95,7 +96,7 @@ class HomeScreen(QWidget):
         v_box.addStretch()
 
         self.setLayout(v_box)
-        self.setStyleSheet("background-color: #7B2BDD;")
+        self.setStyleSheet('background-color: ' + colors.background + ';')
         # widget = QWidget()
         # widget.setLayout(v_box)
         # widget.setStyleSheet("background-color: #1F2933;")  # rgb(18, 18, 18)
@@ -109,6 +110,19 @@ class HomeScreen(QWidget):
         self.thread.start()
 
         self.show()
+
+    def set_button_style(self, button: QPushButton):
+        style = 'QPushButton {' \
+                'color: ' + colors.primary_variant + ';' \
+                'background-color: ' + colors.secondary + ';' \
+                'border-style: outset; border-width: px;' \
+                'border-radius: 15px; border-color: 121212; padding: 4px;' \
+                '}' \
+                'QPushButton::pressed {' \
+                'background-color: ' + colors.secondary_bright + ';' \
+                '}'
+        button.setStyleSheet(style)
+        button.setFont(fonts.roboto_bold(18))
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
@@ -152,6 +166,14 @@ class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
     def run(self):
+        # self.homescreen.video_1.setText("Connecting...")
+        # code: int = urllib.request.urlopen("http://wpilibpi.local:8081").getcode()
+        # while code != 200:
+        #     time.sleep(2)
+        #     code = urllib.request.urlopen("http://wpilibpi.local:8081").getcode()
+        # self.homescreen.video_1.setText("Connected!")
+        # ret = False
+        # while not ret:
         capture = cv2.VideoCapture("http://wpilibpi.local:8081")
         while True:
             ret, cv_img = capture.read()
