@@ -1,6 +1,6 @@
 import time
 
-import PyQt5.uic
+# import PyQt5.uic
 import cv2
 import numpy as np
 from PyQt5 import QtGui
@@ -12,14 +12,15 @@ import image_process
 from GUI import buttons
 
 
-class HomeScreen(QMainWindow):
+class HomeScreen(QWidget):
 
     def __init__(self):
         super(HomeScreen, self).__init__()
+        self.setGeometry(300, 150, 1380, 820)
         # PyQt5.uic.loadUi("homescreen.ui", self)
 
         title = QLabel("Calibration Program")
-        title.setStyleSheet('font: 48pt "Secular One"; color: rgb(48, 63, 159);')
+        title.setStyleSheet('font: 48pt "Secular One"; color: #BB86FC;')  # rgb(48, 63, 159)
         title.setContentsMargins(0,0,0,100)
         title.setAlignment(Qt.AlignCenter)
 
@@ -63,7 +64,7 @@ class HomeScreen(QMainWindow):
 
         # second layout:
         buttons_layout_2: QHBoxLayout = QHBoxLayout()
-        buttons_layout_2.setContentsMargins(0, 45, 0, 0)
+        buttons_layout_2.setContentsMargins(450, 45, 450, 0)
         buttons_layout_2.setSpacing(100)
 
         self.trash = QPushButton()
@@ -75,7 +76,10 @@ class HomeScreen(QMainWindow):
         self.discard = QPushButton()
         self.discard.setObjectName("discard_button")
         self.discard.setText("Discard")
-        self.discard.setStyleSheet('color: rgb(255, 0, 0); font: 20pt "Secular One"; text-align: center')
+        self.discard.setStyleSheet('color: #3700B3; font: 16pt "Secular One"; text-align: center;'
+                                   'background-color: #03DAC5;'
+                                   'border-style: outset; border-width: px;'
+                                   'border-radius: 15px; border-color: black; padding: 10px;')
         self.discard.clicked.connect(buttons.discard)
 
         buttons_layout_2.addWidget(self.trash)
@@ -90,10 +94,12 @@ class HomeScreen(QMainWindow):
         v_box.addLayout(buttons_layout_2)
         v_box.addStretch()
 
-        widget = QWidget()
-        widget.setLayout(v_box)
-        widget.setStyleSheet("background-color: rgb(18, 18, 18);")
-        self.setCentralWidget(widget)
+        self.setLayout(v_box)
+        self.setStyleSheet("background-color: #7B2BDD;")
+        # widget = QWidget()
+        # widget.setLayout(v_box)
+        # widget.setStyleSheet("background-color: #1F2933;")  # rgb(18, 18, 18)
+        # self.setCentralWidget(widget)
 
         # create the video capture thread
         self.thread = VideoThread()
@@ -101,6 +107,8 @@ class HomeScreen(QMainWindow):
         self.thread.change_pixmap_signal.connect(self.update_image)
         # start the thread
         self.thread.start()
+
+        self.show()
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
