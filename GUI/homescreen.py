@@ -48,13 +48,13 @@ class HomeScreen(QWidget):
         self.start.setObjectName("start_button")
         self.start.setText("Start Calibrate")
         self.set_button_style(self.start)
-        self.start.clicked.connect(buttons.calibrate)
+        self.start.clicked.connect(lambda: buttons.calibrate(self))
 
         self.add_to = QPushButton()
         self.add_to.setObjectName("add_to_button")
         self.add_to.setText("Add To Calibrate")
         self.set_button_style(self.add_to)
-        self.add_to.clicked.connect(buttons.add_to_calibrate)
+        self.add_to.clicked.connect(lambda: buttons.add_to_calibrate(self))
 
         buttons_layout_1.addWidget(self.start)
         buttons_layout_1.addWidget(self.add_to)
@@ -68,23 +68,31 @@ class HomeScreen(QWidget):
         self.save.setObjectName("save_button")
         self.save.setText("Save")
         self.set_button_style(self.save)
-        self.save.clicked.connect(buttons.save)
+        self.save.clicked.connect(lambda: buttons.save(self))
 
         self.trash = QPushButton()
         self.trash.setObjectName("trash_button")
         self.trash.setText("Trash")
         self.set_button_style(self.trash)
-        self.trash.clicked.connect(buttons.trash)
+        self.trash.clicked.connect(lambda: buttons.trash(self))
 
         self.discard = QPushButton()
         self.discard.setObjectName("discard_button")
         self.discard.setText("Discard")
         self.set_button_style(self.discard)
-        self.discard.clicked.connect(buttons.discard)
+        self.discard.clicked.connect(lambda: buttons.discard(self))
 
         buttons_layout_2.addWidget(self.save)
         buttons_layout_2.addWidget(self.trash)
         buttons_layout_2.addWidget(self.discard)
+
+        # error label:
+
+        self.error = QLabel()
+        self.error.setFont(fonts.roboto_bold(26))
+        self.error.setStyleSheet('color: ' + colors.error + ';')  # rgb(48, 63, 159)
+        self.error.setContentsMargins(0, 100, 0, 0)
+        self.error.setAlignment(Qt.AlignCenter)
 
         # layouts:
         v_box = QVBoxLayout()
@@ -93,6 +101,7 @@ class HomeScreen(QWidget):
         v_box.addLayout(videos_layout)
         v_box.addLayout(buttons_layout_1)
         v_box.addLayout(buttons_layout_2)
+        v_box.addWidget(self.error)
         v_box.addStretch()
 
         self.setLayout(v_box)
@@ -101,13 +110,6 @@ class HomeScreen(QWidget):
         # widget.setLayout(v_box)
         # widget.setStyleSheet("background-color: #1F2933;")  # rgb(18, 18, 18)
         # self.setCentralWidget(widget)
-
-        # create the video capture thread
-        self.thread = VideoThread()
-        # connect its signal to the update_image slot
-        self.thread.change_pixmap_signal.connect(self.update_image)
-        # start the thread
-        self.thread.start()
 
         self.show()
 
@@ -127,10 +129,15 @@ class HomeScreen(QWidget):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
-        image_1, image_2 = image_process.process_image(cv_img)
-        qt_img_1 = self.convert_cv_qt(image_1)
+        image, _ = image_process.process_image(cv_img)
+        qt_img_1 = self.convert_cv_qt(image)
         self.video_1.setPixmap(qt_img_1)
-        qt_img_2 = self.convert_cv_qt(image_2)
+        self.video_1.mousePressEvent = lambda event: image_process.mouse_pos(event=event, window=self)
+
+    def update_second_stream(self, cv_img):
+        """Updates the image_label with a new opencv image"""
+        _, image = image_process.process_image(cv_img)
+        qt_img_2 = self.convert_cv_qt(image)
         self.video_2.setPixmap(qt_img_2)
 
     def convert_cv_qt(self, cv_img):
@@ -161,9 +168,36 @@ class HomeScreen(QWidget):
         self.display_width = self.video_1.size().width()
         self.display_height = 320
 
+    def start_stream(self):
+        # create the video capture thread
+        self.thread = VideoThread()
+        # connect its signal to the update_image slot
+        self.thread.video_1 = self.video_1
+        self.thread.change_pixmap_signal.connect(self.update_image)
+        # start the thread
+        self.thread.start()
+
+    def stop_stream(self):
+        # stop the video streams
+        self.thread.stop = True
+        self.thread.requestInterruption()
+        while self.thread.isRunning():
+            pass
+        time.sleep(1)
+        self.video_1.clear()
+        self.video_1.mousePressEvent = None
+        self.video_1.setText("Video 1")
+        self.video_2.setText("Video 2")
+        self.video_3.setText("Video 3")
+        self.error.setText("Dumped data!")
+
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)
+
+    video_1: QLabel
+
+    stop: bool = False
 
     def run(self):
         # self.homescreen.video_1.setText("Connecting...")
@@ -174,8 +208,11 @@ class VideoThread(QThread):
         # self.homescreen.video_1.setText("Connected!")
         # ret = False
         # while not ret:
-        capture = cv2.VideoCapture("http://wpilibpi.local:8081")
+        self.video_1.setText("Connecting...")
+        capture = cv2.VideoCapture(0) #http://wpilibpi.local:8081
         while True:
+            if self.stop:
+                return
             ret, cv_img = capture.read()
             if ret:
                 self.change_pixmap_signal.emit(cv_img)
