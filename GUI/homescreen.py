@@ -200,14 +200,6 @@ class VideoThread(QThread):
     stop: bool = False
 
     def run(self):
-        # self.homescreen.video_1.setText("Connecting...")
-        # code: int = urllib.request.urlopen("http://wpilibpi.local:8081").getcode()
-        # while code != 200:
-        #     time.sleep(2)
-        #     code = urllib.request.urlopen("http://wpilibpi.local:8081").getcode()
-        # self.homescreen.video_1.setText("Connected!")
-        # ret = False
-        # while not ret:
         self.video_1.setText("Connecting...")
         capture = cv2.VideoCapture(0) #http://wpilibpi.local:8081
         while True:

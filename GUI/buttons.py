@@ -14,8 +14,8 @@ def calibrate(window: QWidget):
     if NetworkTables.initialize(server='10.56.36.2'):
         global dashboard
         dashboard = NetworkTables.getTable("SmartDashboard")
-    else:
         window.start_stream()
+    else:
         window.error.setText("Can't connect!")
 
 

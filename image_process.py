@@ -14,11 +14,6 @@ def mouse_pos(event, window: QWidget):
     calibration.add_info(x, y, window)
 
 
-# def mouse_click(event, x, y, flags, param):
-#     if event == cv2.EVENT_LBUTTONDBLCLK:
-#         print([y, x])
-
-
 def process_image(cv_img):
     global video_image
     video_image = cv_img.copy()
