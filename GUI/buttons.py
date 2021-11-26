@@ -45,10 +45,13 @@ def discard(window: QWidget):
 
 def save(window: QWidget):
     # saves the data and upload to network tables
-    dashboard.putNumber("calibration-lower-h", vars.lower[0])
-    dashboard.putNumber("calibration-lower-s", vars.lower[1])
-    dashboard.putNumber("calibration-lower-v", vars.lower[2])
-    dashboard.putNumber("calibration-upper-h", vars.upper[0])
-    dashboard.putNumber("calibration-upper-s", vars.upper[1])
-    dashboard.putNumber("calibration-upper-v", vars.upper[2])
-    window.error.setText("Saved!")
+    if NetworkTables.initialize(server='10.56.36.2'):
+        dashboard.putNumber("calibration-lower-h", vars.lower[0])
+        dashboard.putNumber("calibration-lower-s", vars.lower[1])
+        dashboard.putNumber("calibration-lower-v", vars.lower[2])
+        dashboard.putNumber("calibration-upper-h", vars.upper[0])
+        dashboard.putNumber("calibration-upper-s", vars.upper[1])
+        dashboard.putNumber("calibration-upper-v", vars.upper[2])
+        window.error.setText("Saved!")
+    else:
+        window.error.setText("Can't connect!\nPlease connect to the robot and try again.")
