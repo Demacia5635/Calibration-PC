@@ -1,6 +1,5 @@
 import time
 
-# import PyQt5.uic
 import cv2
 import numpy as np
 from PyQt5 import QtGui, QtCore
@@ -20,7 +19,6 @@ class HomeScreen(QWidget):
         fonts.setup()
         self.setWindowTitle("Calibration Program")
         self.setGeometry(300, 150, 1380, 820)
-        # PyQt5.uic.loadUi("homescreen.ui", self)
 
         title = QLabel("Calibration Program")
         title.setFont(fonts.open_sans_bold(48))
