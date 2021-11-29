@@ -74,3 +74,8 @@ def update_vars():
     vars.upper[2] = dashboard.getNumber("calibration-upper-v", vars.upper[2])
     vars.lower_default = vars.lower
     vars.upper_default = vars.upper
+    vars.aov = dashboard.getNumber("camera-aov", vars.aov)
+    vars.ball_radius = dashboard.getNumber("ball_radius", vars.ball_radius)
+    vars.h_max_diff = dashboard.getNumber("calibration-h-diff", vars.h_max_diff)
+    vars.s_max_diff = dashboard.getNumber("calibration-s-diff", vars.s_max_diff)
+    vars.v_max_diff = dashboard.getNumber("calibration-v-diff", vars.v_max_diff)
