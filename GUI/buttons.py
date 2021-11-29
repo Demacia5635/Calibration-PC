@@ -14,6 +14,7 @@ def calibrate(window: QWidget):
     if NetworkTables.initialize(server='10.56.36.2'):
         global dashboard
         dashboard = NetworkTables.getTable("SmartDashboard")
+        update_vars()
         window.start_stream()
     else:
         window.error.setText("Can't connect!")
@@ -62,3 +63,14 @@ def save(window: QWidget):
             window.error.setText("Can't connect!\nPlease connect to the robot and try again.")
     else:
         window.error.setText("You need to add calibration info at least 5 times before saving!")
+
+
+def update_vars():
+    vars.lower[0] = dashboard.getNumber("calibration-lower-h", vars.lower[0])
+    vars.lower[1] = dashboard.getNumber("calibration-lower-s", vars.lower[1])
+    vars.lower[2] = dashboard.getNumber("calibration-lower-v", vars.lower[2])
+    vars.upper[0] = dashboard.getNumber("calibration-upper-h", vars.upper[0])
+    vars.upper[1] = dashboard.getNumber("calibration-upper-s", vars.upper[1])
+    vars.upper[2] = dashboard.getNumber("calibration-upper-v", vars.upper[2])
+    vars.lower_default = vars.lower
+    vars.upper_default = vars.upper
