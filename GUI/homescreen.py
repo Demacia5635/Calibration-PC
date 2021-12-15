@@ -1,10 +1,12 @@
+import os
+import sys
 import time
 
 import cv2
 import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QWidget, QPushButton
 
 import image_process
@@ -17,6 +19,8 @@ class HomeScreen(QWidget):
     def __init__(self):
         super(HomeScreen, self).__init__()
         fonts.setup()
+        icon_path = os.path.join(running_path(), 'icon.png')
+        self.setWindowIcon(QIcon(icon_path))
         self.setWindowTitle("Calibration Program")
         self.setGeometry(300, 150, 1380, 820)
 
@@ -191,6 +195,14 @@ class HomeScreen(QWidget):
         self.video_2.setText("Video 2")
         self.video_3.setText("Video 3")
         self.error.setText("Dumped data!")
+
+
+def running_path():
+    if getattr(sys, 'frozen', False):
+        application_path = sys._MEIPASS
+    elif __file__:
+        application_path = os.path.dirname(__file__)
+    return application_path
 
 
 class VideoThread(QThread):

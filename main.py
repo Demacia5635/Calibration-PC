@@ -1,3 +1,4 @@
+print("Loading...")
 import sys
 
 from PyQt5.QtWidgets import QApplication
@@ -6,14 +7,9 @@ import GUI.homescreen
 
 
 def run_gui():
-    print("test")
+    print("Starting program...")
     app = QApplication(sys.argv)
     homescreen = GUI.homescreen.HomeScreen()
-    # widget = QStackedWidget()
-    # widget.addWidget(homescreen)
-    # widget.setFixedWidth(1480)
-    # widget.setFixedHeight(920)
-    # widget.show()
 
     try:
         sys.exit(app.exec_())
