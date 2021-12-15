@@ -1,14 +1,12 @@
-import threading
 import time
 
 import cv2
 import numpy as np
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui
 from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
-from PyQt5.QtGui import QImage, QPixmap, QFont
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QPushButton
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QWidget, QPushButton
 
-import calibration
 import image_process
 from GUI import buttons, colors
 from GUI.Fonts import fonts

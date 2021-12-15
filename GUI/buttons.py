@@ -1,11 +1,9 @@
-import time
-
-from PyQt5.QtWidgets import QLabel, QWidget
+from PyQt5.QtWidgets import QWidget
 from networktables import NetworkTables, NetworkTable
-from Utils import networktables_handler
 
 import calibration
 import vars
+from Utils import networktables_handler
 
 dashboard: NetworkTable
 

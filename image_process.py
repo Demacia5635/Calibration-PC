@@ -1,12 +1,9 @@
-import threading
-
 import cv2
 import numpy as np
 from PyQt5.QtWidgets import QWidget
 
 import calibration
 import vars
-from Utils import hsv_handler
 
 video_image = None
 

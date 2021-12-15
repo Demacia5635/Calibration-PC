@@ -1,7 +1,4 @@
 import threading
-import time
-import traceback
-import urllib.request
 
 import requests as requests
 from PyQt5.QtWidgets import QLabel

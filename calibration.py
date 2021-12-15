@@ -1,10 +1,9 @@
 import threading
 import time
-from threading import Thread
 
 import cv2
 import numpy as np
-from PyQt5.QtWidgets import QLabel, QWidget
+from PyQt5.QtWidgets import QWidget
 
 import image_process
 import vars

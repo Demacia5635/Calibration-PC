@@ -1,5 +1,4 @@
 import glob
-import os
 
 from PyQt5 import QtGui
 from PyQt5.QtGui import QFont

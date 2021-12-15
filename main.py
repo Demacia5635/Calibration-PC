@@ -1,10 +1,8 @@
 import sys
 
+from PyQt5.QtWidgets import QApplication
+
 import GUI.homescreen
-
-from PyQt5.QtWidgets import QApplication, QStackedWidget
-
-from GUI.Fonts import fonts
 
 
 def run_gui():
