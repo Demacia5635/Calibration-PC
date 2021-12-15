@@ -2,6 +2,7 @@ import time
 
 from PyQt5.QtWidgets import QLabel, QWidget
 from networktables import NetworkTables, NetworkTable
+from Utils import networktables_handler
 
 import calibration
 import vars
@@ -11,8 +12,9 @@ dashboard: NetworkTable
 
 def calibrate(window: QWidget):
     # initialize the calibrate
-    if NetworkTables.initialize(server='10.56.36.2'):
+    if networktables_handler.connected_to_robot():
         global dashboard
+        networktables_handler.connect(window.error)
         dashboard = NetworkTables.getTable("SmartDashboard")
         update_vars()
         window.start_stream()
@@ -51,7 +53,8 @@ def discard(window: QWidget):
 def save(window: QWidget):
     # saves the data and upload to network tables
     if calibration.calibrate_amount >= 5:
-        if NetworkTables.initialize(server='10.56.36.2'):
+        if networktables_handler.connected_to_robot():
+            networktables_handler.connect(window.error)
             dashboard.putNumber("calibration-lower-h", vars.lower[0])
             dashboard.putNumber("calibration-lower-s", vars.lower[1])
             dashboard.putNumber("calibration-lower-v", vars.lower[2])

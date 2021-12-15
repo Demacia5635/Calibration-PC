@@ -199,7 +199,7 @@ class VideoThread(QThread):
 
     def run(self):
         self.video_1.setText("Connecting...")
-        capture = cv2.VideoCapture(0) #http://wpilibpi.local:8081
+        capture = cv2.VideoCapture('10.56.35.12')
         while True:
             if self.stop:
                 return
