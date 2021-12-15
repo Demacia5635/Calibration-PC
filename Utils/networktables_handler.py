@@ -1,6 +1,9 @@
 import threading
+import time
+import traceback
 import urllib.request
 
+import requests as requests
 from PyQt5.QtWidgets import QLabel
 from networktables import NetworkTables
 
@@ -25,7 +28,11 @@ def connection_listener(connected, info, cond):
         cond.notify()
 
 
-def connected_to_robot():
-    url = '10.56.35.2'
-    status_code = urllib.request.urlopen(url).getcode()
-    return status_code == 200
+def connected_to_robot(label: QLabel):
+    try:
+        label.setText("Searching for robot...")
+        url = 'http://10.56.35.2'
+        status_code = requests.get(url, timeout=(2, 1)).status_code
+        return status_code == 200
+    except:
+        return False

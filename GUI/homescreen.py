@@ -1,3 +1,4 @@
+import threading
 import time
 
 import cv2
@@ -7,6 +8,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap, QFont
 from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QMainWindow, QPushButton
 
+import calibration
 import image_process
 from GUI import buttons, colors
 from GUI.Fonts import fonts
@@ -127,16 +129,18 @@ class HomeScreen(QWidget):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
-        image, _ = image_process.process_image(cv_img)
+        image, processed_image = image_process.process_image(cv_img)
         qt_img_1 = self.convert_cv_qt(image)
         self.video_1.setPixmap(qt_img_1)
         self.video_1.mousePressEvent = lambda event: image_process.mouse_pos(event=event, window=self)
+        qt_img_2 = self.convert_cv_qt(processed_image)
+        self.video_2.setPixmap(qt_img_2)
 
-    def update_second_stream(self, cv_img):
+    def update_third_stream(self, cv_img):
         """Updates the image_label with a new opencv image"""
         _, image = image_process.process_image(cv_img)
         qt_img_2 = self.convert_cv_qt(image)
-        self.video_2.setPixmap(qt_img_2)
+        self.video_3.setPixmap(qt_img_2)
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
@@ -177,11 +181,12 @@ class HomeScreen(QWidget):
 
     def stop_stream(self):
         # stop the video streams
-        self.thread.stop = True
-        self.thread.requestInterruption()
-        while self.thread.isRunning():
-            pass
-        time.sleep(1)
+        if type(self.thread) is VideoThread:
+            self.thread.stop = True
+            self.thread.requestInterruption()
+            while self.thread.isRunning():
+                pass
+            time.sleep(1)
         self.video_1.clear()
         self.video_1.mousePressEvent = None
         self.video_1.setText("Video 1")
@@ -199,7 +204,7 @@ class VideoThread(QThread):
 
     def run(self):
         self.video_1.setText("Connecting...")
-        capture = cv2.VideoCapture('10.56.35.12')
+        capture = cv2.VideoCapture('http://10.56.35.12:8081')
         while True:
             if self.stop:
                 return

@@ -1,9 +1,12 @@
+import threading
+
 import cv2
 import numpy as np
 from PyQt5.QtWidgets import QWidget
 
 import calibration
 import vars
+from Utils import hsv_handler
 
 video_image = None
 
@@ -11,6 +14,7 @@ video_image = None
 def mouse_pos(event, window: QWidget):
     x = event.pos().x()
     y = event.pos().y()
+    # print(video_image[y, x])
     calibration.add_info(x, y, window)
 
 
@@ -22,8 +26,8 @@ def process_image(cv_img):
     image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(image, vars.lower, vars.upper)
     kernal = np.ones((5, 5), np.uint8)
-    newmask = cv2.erode(mask, kernal, 2)
-    newmask = cv2.dilate(newmask, kernal, 2)
+    # newmask = cv2.erode(mask, kernal, 2)
+    newmask = cv2.dilate(mask, kernal, 2)
 
     contours, a = cv2.findContours(newmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) > 0:
