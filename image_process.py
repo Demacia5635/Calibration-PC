@@ -8,9 +8,10 @@ import vars
 video_image = None
 
 
-def mouse_pos(event, window: QWidget):
-    x = event.pos().x()
-    y = event.pos().y()
+def mouse_pos(event, window: QWidget, cv_img):
+    image_h, image_w, _ = cv_img.shape
+    x = round(event.pos().x() * (image_w / window.video_1.size().width()))
+    y = round(event.pos().y() * (image_h / window.video_1.size().height()))
     # print(video_image[y, x])
     calibration.add_info(x, y, window)
 

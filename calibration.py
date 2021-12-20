@@ -15,6 +15,23 @@ calibrate_amount: int = 0
 data = []
 
 
+def add_info(x, y, window: QWidget):
+    global calibrate_amount
+    calibrate_amount += 1
+
+    hsv_values = hsv_handler.HSV_Values()
+    thread = threading.Thread(target=hsv_from_pixel, args=(x, y, 0.5, hsv_values))
+    thread.start()
+    thread.join()
+
+    for values in hsv_values.hsv:
+        data.append(values)
+    print(data)
+
+    window.update_third_stream(image_process.video_image)
+    update_data()
+
+
 def hsv_from_pixel(x, y, seconds, values: HSV_Values):
     hsv = []
     start_time = time.time()
@@ -37,24 +54,6 @@ def dump_max_min_values(h: list, s: list, v: list):
     v.sort()
     v = v[1:-1]
     return h, s, v
-
-
-def add_info(x, y, window: QWidget):
-    global calibrate_amount
-    calibrate_amount += 1
-
-    hsv_values = hsv_handler.HSV_Values()
-    thread = threading.Thread(target=hsv_from_pixel, args=(x, y, 0.5, hsv_values))
-    thread.start()
-    thread.join()
-
-    for values in hsv_values.hsv:
-        data.append(values)
-    print(data)
-
-    window.update_third_stream(image_process.video_image)
-    if calibrate_amount >= 3:
-        update_data()
 
 
 def add_to_calibrate(window: QWidget):

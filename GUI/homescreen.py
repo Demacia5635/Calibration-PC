@@ -131,18 +131,21 @@ class HomeScreen(QWidget):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
-        image, processed_image = image_process.process_image(cv_img)
-        qt_img_1 = self.convert_cv_qt(image)
-        self.video_1.setPixmap(qt_img_1)
-        self.video_1.mousePressEvent = lambda event: image_process.mouse_pos(event=event, window=self)
-        qt_img_2 = self.convert_cv_qt(processed_image)
-        self.video_2.setPixmap(qt_img_2)
+        if not self.thread.stop:
+            image, processed_image = image_process.process_image(cv_img)
+            qt_img_1 = self.convert_cv_qt(image)
+            if not self.thread.stop:
+                self.video_1.setPixmap(qt_img_1)
+                self.video_1.mousePressEvent = lambda event: image_process.mouse_pos(event=event, window=self, cv_img=cv_img)
+                qt_img_2 = self.convert_cv_qt(processed_image)
+                self.video_2.setPixmap(qt_img_2)
 
     def update_third_stream(self, cv_img):
         """Updates the image_label with a new opencv image"""
         _, image = image_process.process_image(cv_img)
         qt_img_2 = self.convert_cv_qt(image)
-        self.video_3.setPixmap(qt_img_2)
+        if not self.thread.stop:
+            self.video_3.setPixmap(qt_img_2)
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
@@ -183,18 +186,21 @@ class HomeScreen(QWidget):
 
     def stop_stream(self):
         # stop the video streams
-        if type(self.thread) is VideoThread:
+        if type(self.thread) is VideoThread and self.thread.isRunning():
             self.thread.stop = True
             self.thread.requestInterruption()
             while self.thread.isRunning():
                 pass
-            time.sleep(1)
-        self.video_1.clear()
-        self.video_1.mousePressEvent = None
-        self.video_1.setText("Video 1")
-        self.video_2.setText("Video 2")
-        self.video_3.setText("Video 3")
-        self.error.setText("Dumped data!")
+            self.video_1.mousePressEvent = None
+            self.video_1.clear()
+            self.video_2.clear()
+            self.video_3.clear()
+            self.video_1.setText("Video 1")
+            self.video_2.setText("Video 2")
+            self.video_3.setText("Video 3")
+            self.error.setText("Dumped data!")
+        else:
+            self.error.setText("No data to dump!")
 
 
 def running_path():
