@@ -143,9 +143,10 @@ class HomeScreen(QWidget):
     def update_third_stream(self, cv_img):
         """Updates the image_label with a new opencv image"""
         _, image = image_process.process_image(cv_img)
-        qt_img_2 = self.convert_cv_qt(image)
-        if not self.thread.stop:
-            self.video_3.setPixmap(qt_img_2)
+        if image is not None:
+            qt_img_2 = self.convert_cv_qt(image)
+            if not self.thread.stop:
+                self.video_3.setPixmap(qt_img_2)
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""

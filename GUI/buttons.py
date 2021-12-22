@@ -23,7 +23,7 @@ def calibrate(window: QWidget):
 def add_to_calibrate(window: QWidget):
     # add data to the calibrate memory
     if calibration.calibrate_amount >= 3:
-        calibration.add_to_calibrate(window)
+        calibration.add_to_calibrate(window, 0.5)
     else:
         window.error.setText("Click the ball in the left stream at least 3 times to start calibrate")
 
@@ -32,7 +32,7 @@ def trash(window: QWidget):
     # delete the last data
     if calibration.calibrate_amount > 0:
         calibration.calibrate_amount -= 1
-        calibration.data.pop()
+        calibration.data = calibration.saved_data.copy()
         calibration.update_data()
         window.error.setText("Removed last data!")
     else:
