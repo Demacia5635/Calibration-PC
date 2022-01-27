@@ -71,7 +71,7 @@ def get_hsv():
     newmask = cv2.erode(mask, kernal, 2)
     newmask = cv2.dilate(newmask, kernal, 2)
 
-    contours, a = cv2.findContours(newmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(newmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     min_hsv = [300, 300, 300]
     max_hsv = [-1, -1, -1]
@@ -90,10 +90,13 @@ def get_hsv():
     newContour = []
 
     for row in contour:
-        vec = row[0][0] - center[0]
-        vec = row[0][1] - center[1]
-        vec[0] = vec[0] * vars.increase
-        vec[1] = vec[1] * vars.increase
+        vec = [0, 0]
+        vec[0] = int(row[0][0] - center[0])
+        vec[1] = int(row[0][1] - center[1])
+        vec[0] = int(vec[0] * vars.increase)
+        vec[1] = int(vec[1] * vars.increase)
+        vec[0] += center[0]
+        vec[1] += center[1]
 
         newContour.append([vec])
 
