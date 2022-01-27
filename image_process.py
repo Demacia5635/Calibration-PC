@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from cv2 import drawContours
 from PyQt5.QtWidgets import QWidget
 
 import calibration
@@ -74,32 +75,43 @@ def get_hsv():
 
     min_hsv = [300, 300, 300]
     max_hsv = [-1, -1, -1]
-    check = False
-    if len(contours) > 0:
-        max_radius = -1
-        contour = None
-        for c in contours:
-            _, radius = cv2.minEnclosingCircle(c)
-            if radius > max_radius:
-                max_radius = radius
-                contour = c
-        if contour is not None:
-            ((x, y), radius) = cv2.minEnclosingCircle(contour)
-            for i in range(max(int(x - radius), 0), min(int(x + radius), image.shape[0])):
-                for j in range(max(int(y - radius), 0), min(int(y + radius), image.shape[1])):
-                    if (i - x) ** 2 + (j - y) ** 2 <= radius ** 2:
-                        pixel = image[i][j]
-                        if vars.lower[0] - vars.h_max_diff <= pixel[0] <= vars.upper[0] + vars.h_max_diff:
-                            if vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff:
-                                if vars.lower[2] - vars.v_max_diff <= pixel[2] <= vars.upper[2] + vars.v_max_diff:
-                                    check = True
-                                    min_hsv[0] = min(min_hsv[0], pixel[0])
-                                    min_hsv[1] = min(min_hsv[1], pixel[1])
-                                    min_hsv[2] = min(min_hsv[2], pixel[2])
-                                    max_hsv[0] = max(max_hsv[0], pixel[0])
-                                    max_hsv[1] = max(max_hsv[1], pixel[1])
-                                    max_hsv[2] = max(max_hsv[2], pixel[2])
-    if check:
-        return min_hsv, max_hsv
-    else:
+    if len(contours) == 0:
         return None, None
+    max_area = -1
+    contour = None
+    for c in contours:
+        area = cv2.contourArea(c)
+        if area > max_area:
+            max_area = area
+            contour = c
+
+    M = cv2.moments(contour)
+    center = [M['m10'] / M['m00'], M['m01'] / M['m00']]
+    newContour = []
+
+    for row in contour:
+        vec = row[0][0] - center[0]
+        vec = row[0][1] - center[1]
+        vec[0] = vec[0] * vars.increase
+        vec[1] = vec[1] * vars.increase
+
+        newContour.append([vec])
+
+    mask = np.zeros_like(mask)
+    drawContours(mask, [newContour], 0, 1, -1)
+
+    for i in range(0, image.shape[0]):
+        for j in range(0, image.shape[1]):
+            if mask[i][j] == 0:
+                continue
+            pixel = image[i][j]
+            if vars.lower[0] - vars.h_max_diff <= pixel[0] <= vars.upper[0] + vars.h_max_diff:
+                    if vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff:
+                        if vars.lower[2] - vars.v_max_diff <= pixel[2] <= vars.upper[2] + vars.v_max_diff:
+                            min_hsv[0] = min(min_hsv[0], pixel[0])
+                            min_hsv[1] = min(min_hsv[1], pixel[1])
+                            min_hsv[2] = min(min_hsv[2], pixel[2])
+                            max_hsv[0] = max(max_hsv[0], pixel[0])
+                            max_hsv[1] = max(max_hsv[1], pixel[1])
+                            max_hsv[2] = max(max_hsv[2], pixel[2])
+    return min_hsv, max_hsv

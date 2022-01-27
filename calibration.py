@@ -35,15 +35,12 @@ def add_info(x, y, window: QWidget):
     update_data()
 
 
-def hsv_from_pixel(x, y, seconds, values: HSV_Values):
+def hsv_from_pixel(x, y, values: HSV_Values):
     hsv = []
-    start_time = time.time()
-    while (time.time() - start_time) < seconds:
-        image = cv2.cvtColor(image_process.video_image, cv2.COLOR_BGR2HSV)
-        pixel = image[y, x]
-        print(pixel)
-        hsv.append(pixel)
-        time.sleep(0.1)
+    image = cv2.cvtColor(image_process.video_image, cv2.COLOR_BGR2HSV)
+    pixel = image[y, x]
+    print(pixel)
+    hsv.append(pixel)
     transposed_data = np.array(list(zip(*hsv))).tolist()
     h, s, v = dump_values(transposed_data[0], transposed_data[1], transposed_data[2])
     values.update(h, s, v)
@@ -56,19 +53,15 @@ def dump_values(h: list, s: list, v: list, num=1):
     return h, s, v
 
 
-def add_to_calibrate(window: QWidget, seconds):
+def add_to_calibrate(window: QWidget):
     hsv_min = []
     hsv_max = []
-    start_time = time.time()
-    while (time.time() - start_time) < seconds:
-        min_hsv, max_hsv = image_process.get_hsv()
-        if min_hsv and max_hsv:
-            print(min_hsv)
-            print(max_hsv)
-            hsv_min.append(min_hsv)
-            hsv_max.append(max_hsv)
-        time.sleep(0.1)
-    if hsv_min and hsv_max:
+    min_hsv, max_hsv = image_process.get_hsv()
+    if min_hsv and max_hsv:
+        print(min_hsv)
+        print(max_hsv)
+        hsv_min.append(min_hsv)
+        hsv_max.append(max_hsv)
         global calibrate_amount, saved_data
         calibrate_amount += 1
 
@@ -86,7 +79,7 @@ def add_to_calibrate(window: QWidget, seconds):
         window.error.setText("Added!")
         window.update_third_stream(image_process.video_image)
     else:
-        window.error.setText("Cannot find a ball, please try again!")
+        window.error.setText("Cannot find; please try again!")
 
 
 def update_data():

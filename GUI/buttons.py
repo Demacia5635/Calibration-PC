@@ -1,8 +1,7 @@
-from PyQt5.QtWidgets import QWidget
-from networktables import NetworkTables, NetworkTable
-
 import calibration
 import vars
+from networktables import NetworkTable, NetworkTables
+from PyQt5.QtWidgets import QWidget
 from Utils import networktables_handler
 
 dashboard: NetworkTable
@@ -22,8 +21,8 @@ def calibrate(window: QWidget):
 
 def add_to_calibrate(window: QWidget):
     # add data to the calibrate memory
-    if calibration.calibrate_amount >= 3:
-        calibration.add_to_calibrate(window, 0.5)
+    if calibration.calibrate_amount:
+        calibration.add_to_calibrate(window)
     else:
         window.error.setText("Click the ball in the left stream at least 3 times to start calibrate")
 

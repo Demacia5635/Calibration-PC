@@ -3,13 +3,14 @@ import sys
 import time
 
 import cv2
+import image_process
 import numpy as np
 from PyQt5 import QtGui
-from PyQt5.QtCore import QThread, pyqtSignal, Qt, pyqtSlot
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QWidget, QPushButton
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
+                             QWidget)
 
-import image_process
 from GUI import buttons, colors
 from GUI.Fonts import fonts
 
