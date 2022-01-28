@@ -100,8 +100,9 @@ def get_hsv():
 
         newContour.append([vec])
 
-    mask = np.zeros_like(mask)
-    drawContours(mask, [newContour], 0, 1, -1)
+    newMask = np.zeros_like(mask)
+    drawContours(newMask, [newContour], 0, 1, -1)
+    newMask = cv2.bitwise_xor(newMask, mask)
 
     for i in range(0, image.shape[0]):
         for j in range(0, image.shape[1]):
