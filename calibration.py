@@ -1,15 +1,9 @@
-import itertools
-import threading
-import time
-
 import cv2
 import numpy as np
 from PyQt5.QtWidgets import QWidget
 
 import image_process
 import vars
-from Utils import hsv_handler
-from Utils.hsv_handler import HSV_Values
 
 calibrate_amount: int = 0
 

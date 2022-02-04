@@ -1,5 +1,5 @@
+import cv2
 import numpy as np
-from cv2 import cv2
 from PyQt5.QtWidgets import QWidget
 
 import calibration
@@ -33,10 +33,15 @@ def process_image(cv_img):
         newmask = cv2.dilate(mask, kernal, 2)
     return oldimage, newmask
 
+def in_adding_range(pixel):
+    return vars.lower[0] - vars.h_max_diff <= pixel[0] <= vars.upper[0] + vars.h_max_diff and \
+        vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff and \
+        vars.lower[2] - vars.v_max_diff <= pixel[2] <= vars.upper[2] + vars.v_max_diff
 
 def get_hsv():
     global third_image, video_image
     image = cv2.cvtColor(video_image, cv2.COLOR_BGR2HSV)
+    image = cv2.GaussianBlur(image, (5, 5), 0)
     mask = cv2.inRange(image, vars.lower, vars.upper)
     kernal = np.ones((5, 5), np.uint8)
     newmask = cv2.erode(mask, kernal, 2)
@@ -48,13 +53,8 @@ def get_hsv():
     max_hsv = [-1, -1, -1]
     if len(contours) == 0:
         return None, None
-    max_area = -1
-    contour = None
-    for c in contours:
-        area = cv2.contourArea(c)
-        if area > max_area:
-            max_area = area
-            contour = c
+
+    contour = max(contours, key=cv2.contourArea)
 
     M = cv2.moments(contour)
     center = [M['m10'] / M['m00'], M['m01'] / M['m00']]
@@ -81,14 +81,12 @@ def get_hsv():
             if new_mask[i][j] == 0:
                 continue
             pixel = image[i][j]
-            if vars.lower[0] - vars.h_max_diff <= pixel[0] <= vars.upper[0] + vars.h_max_diff:
-                if vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff:
-                    if vars.lower[2] - vars.v_max_diff <= pixel[2] <= vars.upper[2] + vars.v_max_diff:
-                        min_hsv[0] = min(min_hsv[0], pixel[0])
-                        min_hsv[1] = min(min_hsv[1], pixel[1])
-                        min_hsv[2] = min(min_hsv[2], pixel[2])
-                        max_hsv[0] = max(max_hsv[0], pixel[0])
-                        max_hsv[1] = max(max_hsv[1], pixel[1])
-                        max_hsv[2] = max(max_hsv[2], pixel[2])
+            if in_adding_range(pixel):
+                min_hsv[0] = min(min_hsv[0], pixel[0])
+                min_hsv[1] = min(min_hsv[1], pixel[1])
+                min_hsv[2] = min(min_hsv[2], pixel[2])
+                max_hsv[0] = max(max_hsv[0], pixel[0])
+                max_hsv[1] = max(max_hsv[1], pixel[1])
+                max_hsv[2] = max(max_hsv[2], pixel[2])
     third_image = new_mask
     return min_hsv, max_hsv

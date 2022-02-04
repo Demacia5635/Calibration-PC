@@ -25,7 +25,7 @@ def add_to_calibrate(window: QWidget):
     if calibration.calibrate_amount:
         calibration.add_to_calibrate(window)
     else:
-        window.error.setText("Click the ball in the left stream at least 3 times to start calibrate")
+        window.error.setText("Click the left stream at least once to start calibrate")
 
 
 def undo(window: QWidget):
