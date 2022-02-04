@@ -28,12 +28,13 @@ def add_to_calibrate(window: QWidget):
         window.error.setText("Click the ball in the left stream at least 3 times to start calibrate")
 
 
-def trash(window: QWidget):
+def undo(window: QWidget):
     # delete the last data
     if calibration.calibrate_amount > 0:
         calibration.calibrate_amount -= 1
         calibration.data.pop()
-        calibration.update_data()
+        if calibration.calibrate_amount > 0:
+            calibration.update_data()
         window.error.setText("Removed last data!")
     else:
         window.error.setText("Can't undo. No data found!")

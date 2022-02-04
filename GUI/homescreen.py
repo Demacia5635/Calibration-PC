@@ -93,11 +93,11 @@ class HomeScreen(QWidget):
         set_button_style(self.save)
         self.save.clicked.connect(lambda: buttons.save(self))
 
-        self.trash = QPushButton()
-        self.trash.setObjectName("trash_button")
-        self.trash.setText("Trash")
-        set_button_style(self.trash)
-        self.trash.clicked.connect(lambda: buttons.trash(self))
+        self.undo = QPushButton()
+        self.undo.setObjectName("undo_button")
+        self.undo.setText("Undo")
+        set_button_style(self.undo)
+        self.undo.clicked.connect(lambda: buttons.undo(self))
 
         self.discard = QPushButton()
         self.discard.setObjectName("discard_button")
@@ -106,7 +106,7 @@ class HomeScreen(QWidget):
         self.discard.clicked.connect(lambda: buttons.discard(self))
 
         buttons_layout_2.addWidget(self.save)
-        buttons_layout_2.addWidget(self.trash)
+        buttons_layout_2.addWidget(self.undo)
         buttons_layout_2.addWidget(self.discard)
 
         # error label:
