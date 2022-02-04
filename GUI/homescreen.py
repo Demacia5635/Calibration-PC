@@ -4,7 +4,6 @@ import sys
 import time
 
 import requests
-import validators
 from cv2 import cv2
 
 import image_process
@@ -169,12 +168,15 @@ class HomeScreen(QWidget):
         text: str = self.input.text()
         if text.isnumeric():
             return 'number'
-        elif validators.url(text):
-            with contextlib.suppress():
+        else:
+            try:
                 status_code = requests.get(text, timeout=(2, 1)).status_code
                 if status_code == 200:
                     return 'valid url'
-            return 'cant connect'
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                return 'cant connect'
+            except requests.exceptions.InvalidURL:
+                return 'invalid'
         return 'invalid'
 
     def disable_input(self):
