@@ -1,12 +1,13 @@
-import cv2
 import numpy as np
-from cv2 import drawContours
+from cv2 import cv2
 from PyQt5.QtWidgets import QWidget
 
 import calibration
 import vars
 
 video_image = None
+
+third_image = None
 
 
 def mouse_pos(event, window: QWidget, cv_img):
@@ -25,46 +26,16 @@ def process_image(cv_img):
     image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
     newmask = None
     if image is not None:
+        image = cv2.GaussianBlur(image, (5, 5), 0)
         mask = cv2.inRange(image, vars.lower, vars.upper)
         kernal = np.ones((5, 5), np.uint8)
-        # newmask = cv2.erode(mask, kernal, 2)
+        newmask = cv2.erode(mask, kernal, 2)
         newmask = cv2.dilate(mask, kernal, 2)
-
-        contours, a = cv2.findContours(newmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if len(contours) > 0:
-            max_radius = -1
-            contour = None
-            for c in contours:
-                _, radius = cv2.minEnclosingCircle(c)
-                if radius > max_radius:
-                    max_radius = radius
-                    contour = c
-            if contour is not None:
-                ((x, y), radius) = cv2.minEnclosingCircle(contour)
-                if radius > 10 and radius <= x < oldimage.shape[1] - radius and radius <= y < oldimage.shape[0] - radius:
-                    radius /= 1.15
-                    pixels = []
-                    pixels.append(image[int(y - radius), int(x)])
-                    pixels.append(image[int(y), int(x + radius)])
-                    pixels.append(image[int(y), int(x - radius)])
-                    cv2.circle(oldimage, (int(x), int(y - radius)), 3, (0, 0, 0), 3)
-                    cv2.circle(oldimage, (int(x), int(y - radius)), 3, (0, 0, 0), 3)
-                    cv2.circle(oldimage, (int(x), int(y - radius)), 3, (0, 0, 0), 3)
-                    draw = True
-                    for pixel in pixels:
-                        if vars.lower[0] > pixel[0] or pixel[0] > vars.upper[0] or pixel[1] <= 50:
-                            draw = False
-                            break
-                    if draw:
-                        radius *= 1.15
-                        cv2.circle(oldimage, (int(x), int(y)), int(radius), (252, 40, 3), 3)
-                    else:
-                        radius *= 1.15
-                        cv2.circle(oldimage, (int(x), int(y)), int(radius), (0, 0, 255), 3)
     return oldimage, newmask
 
 
 def get_hsv():
+    global third_image, video_image
     image = cv2.cvtColor(video_image, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(image, vars.lower, vars.upper)
     kernal = np.ones((5, 5), np.uint8)
@@ -91,31 +62,33 @@ def get_hsv():
 
     for row in contour:
         vec = [0, 0]
-        vec[0] = int(row[0][0] - center[0])
-        vec[1] = int(row[0][1] - center[1])
-        vec[0] = int(vec[0] * vars.increase)
-        vec[1] = int(vec[1] * vars.increase)
+        vec[0] = row[0][0] - center[0]
+        vec[1] = row[0][1] - center[1]
+        vec[0] = vec[0] * vars.increase
+        vec[1] = vec[1] * vars.increase
         vec[0] += center[0]
         vec[1] += center[1]
-
+        vec[0] = int(vec[0])
+        vec[1] = int(vec[1])
         newContour.append([vec])
 
-    newMask = np.zeros_like(mask)
-    drawContours(newMask, [newContour], 0, 1, -1)
-    newMask = cv2.bitwise_xor(newMask, mask)
+    new_mask = np.zeros_like(mask)
+    cv2.drawContours(new_mask, np.array([newContour]), 0, 255, thickness=-1)
+    new_mask = cv2.bitwise_xor(new_mask, mask)
 
     for i in range(0, image.shape[0]):
         for j in range(0, image.shape[1]):
-            if mask[i][j] == 0:
+            if new_mask[i][j] == 0:
                 continue
             pixel = image[i][j]
             if vars.lower[0] - vars.h_max_diff <= pixel[0] <= vars.upper[0] + vars.h_max_diff:
-                    if vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff:
-                        if vars.lower[2] - vars.v_max_diff <= pixel[2] <= vars.upper[2] + vars.v_max_diff:
-                            min_hsv[0] = min(min_hsv[0], pixel[0])
-                            min_hsv[1] = min(min_hsv[1], pixel[1])
-                            min_hsv[2] = min(min_hsv[2], pixel[2])
-                            max_hsv[0] = max(max_hsv[0], pixel[0])
-                            max_hsv[1] = max(max_hsv[1], pixel[1])
-                            max_hsv[2] = max(max_hsv[2], pixel[2])
+                if vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff:
+                    if vars.lower[2] - vars.v_max_diff <= pixel[2] <= vars.upper[2] + vars.v_max_diff:
+                        min_hsv[0] = min(min_hsv[0], pixel[0])
+                        min_hsv[1] = min(min_hsv[1], pixel[1])
+                        min_hsv[2] = min(min_hsv[2], pixel[2])
+                        max_hsv[0] = max(max_hsv[0], pixel[0])
+                        max_hsv[1] = max(max_hsv[1], pixel[1])
+                        max_hsv[2] = max(max_hsv[2], pixel[2])
+    third_image = new_mask
     return min_hsv, max_hsv

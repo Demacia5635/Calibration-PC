@@ -1,18 +1,36 @@
+import contextlib
 import os
 import sys
 import time
 
-import cv2
+import requests
+import validators
+from cv2 import cv2
+
 import image_process
 import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
-                             QWidget)
+                             QWidget, QLineEdit, QDesktopWidget)
 
 from GUI import buttons, colors
 from GUI.Fonts import fonts
+
+
+def set_button_style(button: QPushButton):
+    style = 'QPushButton {' \
+            'color: ' + colors.primary_variant + ';' \
+            'background-color: ' + colors.secondary + ';' \
+            'border-style: outset; border-width: px;' \
+            'border-radius: 15px; border-color: 121212; padding: 4px;' \
+            '}' \
+            'QPushButton::pressed {' \
+            'background-color: ' + colors.secondary_bright + ';' \
+            '}'
+    button.setStyleSheet(style)
+    button.setFont(fonts.roboto_bold(18))
 
 
 class HomeScreen(QWidget):
@@ -23,13 +41,15 @@ class HomeScreen(QWidget):
         icon_path = os.path.join(running_path(), 'icon.png')
         self.setWindowIcon(QIcon(icon_path))
         self.setWindowTitle("Calibration Program")
-        self.setGeometry(300, 150, 1380, 820)
+        self.setGeometry(300, 500, 1380, 820)
 
         title = QLabel("Calibration Program")
         title.setFont(fonts.open_sans_bold(48))
         title.setStyleSheet('color: ' + colors.primary + ';')  # rgb(48, 63, 159)
         title.setContentsMargins(0, 0, 0, 100)
         title.setAlignment(Qt.AlignCenter)
+
+        self.thread = None
 
         # video streams:
         videos_layout: QHBoxLayout = QHBoxLayout()
@@ -50,13 +70,13 @@ class HomeScreen(QWidget):
         self.start = QPushButton()
         self.start.setObjectName("start_button")
         self.start.setText("Start Calibrate")
-        self.set_button_style(self.start)
+        set_button_style(self.start)
         self.start.clicked.connect(lambda: buttons.calibrate(self))
 
         self.add_to = QPushButton()
         self.add_to.setObjectName("add_to_button")
         self.add_to.setText("Add To Calibrate")
-        self.set_button_style(self.add_to)
+        set_button_style(self.add_to)
         self.add_to.clicked.connect(lambda: buttons.add_to_calibrate(self))
 
         buttons_layout_1.addWidget(self.start)
@@ -70,19 +90,19 @@ class HomeScreen(QWidget):
         self.save = QPushButton()
         self.save.setObjectName("save_button")
         self.save.setText("Save")
-        self.set_button_style(self.save)
+        set_button_style(self.save)
         self.save.clicked.connect(lambda: buttons.save(self))
 
         self.trash = QPushButton()
         self.trash.setObjectName("trash_button")
         self.trash.setText("Trash")
-        self.set_button_style(self.trash)
+        set_button_style(self.trash)
         self.trash.clicked.connect(lambda: buttons.trash(self))
 
         self.discard = QPushButton()
         self.discard.setObjectName("discard_button")
         self.discard.setText("Discard")
-        self.set_button_style(self.discard)
+        set_button_style(self.discard)
         self.discard.clicked.connect(lambda: buttons.discard(self))
 
         buttons_layout_2.addWidget(self.save)
@@ -90,12 +110,33 @@ class HomeScreen(QWidget):
         buttons_layout_2.addWidget(self.discard)
 
         # error label:
-
         self.error = QLabel()
         self.error.setFont(fonts.roboto_bold(26))
         self.error.setStyleSheet('color: ' + colors.error + ';')  # rgb(48, 63, 159)
-        self.error.setContentsMargins(0, 100, 0, 0)
+        self.error.setContentsMargins(0, 80, 0, 0)
         self.error.setAlignment(Qt.AlignCenter)
+
+        # input label:
+        self.input = QLineEdit()
+        self.input.returnPressed.connect(lambda: self.disable_input())
+        self.input.setText("0")
+        self.input.setFont(fonts.roboto_bold(20))
+        self.input.setStyleSheet('color: ' + colors.secondary + ';')  # rgb(48, 63, 159)
+        self.input.setContentsMargins(0, 20, 0, 0)
+        self.input.setAlignment(Qt.AlignCenter)
+        self.input.setVisible(False)
+        self.input.setEnabled(False)
+
+        # save input index label:
+        self.save_input = QLineEdit()
+        self.save_input.returnPressed.connect(lambda: buttons.save_with_input(self))
+        self.save_input.setText("0")
+        self.save_input.setFont(fonts.roboto_bold(20))
+        self.save_input.setStyleSheet('color: ' + colors.secondary + ';')  # rgb(48, 63, 159)
+        self.save_input.setContentsMargins(0, 20, 0, 0)
+        self.save_input.setAlignment(Qt.AlignCenter)
+        self.save_input.setVisible(False)
+        self.save_input.setEnabled(False)
 
         # layouts:
         v_box = QVBoxLayout()
@@ -105,6 +146,8 @@ class HomeScreen(QWidget):
         v_box.addLayout(buttons_layout_1)
         v_box.addLayout(buttons_layout_2)
         v_box.addWidget(self.error)
+        v_box.addWidget(self.input)
+        v_box.addWidget(self.save_input)
         v_box.addStretch()
 
         self.setLayout(v_box)
@@ -115,19 +158,59 @@ class HomeScreen(QWidget):
         # self.setCentralWidget(widget)
 
         self.show()
+        self.center()
 
-    def set_button_style(self, button: QPushButton):
-        style = 'QPushButton {' \
-                'color: ' + colors.primary_variant + ';' \
-                'background-color: ' + colors.secondary + ';' \
-                'border-style: outset; border-width: px;' \
-                'border-radius: 15px; border-color: 121212; padding: 4px;' \
-                '}' \
-                'QPushButton::pressed {' \
-                'background-color: ' + colors.secondary_bright + ';' \
-                '}'
-        button.setStyleSheet(style)
-        button.setFont(fonts.roboto_bold(18))
+    def enable_input(self):
+        self.input.setVisible(True)
+        self.input.setEnabled(True)
+        self.center()
+
+    def check_input(self):
+        text: str = self.input.text()
+        if text.isnumeric():
+            return 'number'
+        elif validators.url(text):
+            with contextlib.suppress():
+                status_code = requests.get(text, timeout=(2, 1)).status_code
+                if status_code == 200:
+                    return 'valid url'
+            return 'cant connect'
+        return 'invalid'
+
+    def disable_input(self):
+        if not self.input.isEnabled():
+            return
+        camera_stream = self.input.text()
+        input_status = self.check_input()
+        if input_status == 'invalid':
+            self.error.setText("Invalid URL.")
+            return
+        elif input_status == 'cant connect':
+            self.error.setText("Can't connect to the given url.")
+            return
+        elif input_status == 'number':
+            camera_stream = int(camera_stream)
+        self.error.setText('')
+        self.input.setVisible(False)
+        self.input.setEnabled(False)
+        self.start_stream(camera_stream)
+        self.center()
+
+    def disable_save_input(self):
+        self.save_input.setVisible(False)
+        self.save_input.setEnabled(False)
+        self.center()
+
+    def enable_save_input(self):
+        self.save_input.setVisible(True)
+        self.save_input.setEnabled(True)
+        self.center()
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
@@ -137,13 +220,17 @@ class HomeScreen(QWidget):
             qt_img_1 = self.convert_cv_qt(image)
             if not self.thread.stop:
                 self.video_1.setPixmap(qt_img_1)
-                self.video_1.mousePressEvent = lambda event: image_process.mouse_pos(event=event, window=self, cv_img=cv_img)
+                self.video_1.mousePressEvent = lambda event: image_process.mouse_pos(event=event, window=self,
+                                                                                     cv_img=cv_img)
                 qt_img_2 = self.convert_cv_qt(processed_image)
                 self.video_2.setPixmap(qt_img_2)
 
-    def update_third_stream(self, cv_img):
+    def update_third_stream(self, cv_img, masked=False):
         """Updates the image_label with a new opencv image"""
-        _, image = image_process.process_image(cv_img)
+        if masked:
+            image = cv_img
+        else:
+            _, image = image_process.process_image(cv_img)
         if image is not None:
             qt_img_2 = self.convert_cv_qt(image)
             if not self.thread.stop:
@@ -154,8 +241,8 @@ class HomeScreen(QWidget):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
-        convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.display_width, self.display_height, Qt.KeepAspectRatio)
+        convert_to_qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+        p = convert_to_qt_format.scaled(self.display_width, self.display_height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
 
     def create_video_labels(self):
@@ -177,11 +264,10 @@ class HomeScreen(QWidget):
         self.display_width = self.video_1.size().width()
         self.display_height = 320
 
-    def start_stream(self):
+    def start_stream(self, camera_stream=False):
         # create the video capture thread
-        self.thread = VideoThread()
+        self.thread = VideoThread(video_stream=self.video_1, camera_stream=camera_stream, window=self, update_image=self.update_image)
         # connect its signal to the update_image slot
-        self.thread.video_1 = self.video_1
         self.thread.change_pixmap_signal.connect(self.update_image)
         # start the thread
         self.thread.start()
@@ -203,9 +289,11 @@ class HomeScreen(QWidget):
             self.error.setText("Dumped data!")
         else:
             self.error.setText("No data to dump!")
+        self.center()
 
 
 def running_path():
+    application_path = None
     if getattr(sys, 'frozen', False):
         application_path = sys._MEIPASS
     elif __file__:
@@ -214,15 +302,24 @@ def running_path():
 
 
 class VideoThread(QThread):
+
     change_pixmap_signal = pyqtSignal(np.ndarray)
 
-    video_1: QLabel
+    def __init__(self, video_stream, camera_stream, window, update_image):
 
-    stop: bool = False
+        super().__init__()
+        self.video_stream: QLabel = video_stream
+
+        self.stop: bool = False
+
+        self.camera_stream = camera_stream
+
+        self.window: QWidget = window
 
     def run(self):
-        self.video_1.setText("Connecting...")
-        capture = cv2.VideoCapture('http://10.56.35.12:8081')
+        self.video_stream.setText("Connecting...")
+        capture = cv2.VideoCapture(self.camera_stream)
+        self.window.center()
         while True:
             if self.stop:
                 return

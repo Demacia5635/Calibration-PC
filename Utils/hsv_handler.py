@@ -4,8 +4,7 @@ import numpy as np
 class HSV_Values:
 
     def __init__(self):
-        pass
+        self.hsv = None
 
     def update(self, h, s, v):
-        data = [h, s, v]
-        self.hsv = np.array(list(zip(*data)))
+        self.hsv = [h, s, v]

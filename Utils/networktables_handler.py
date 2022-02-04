@@ -9,7 +9,8 @@ def connect(label: QLabel):
     cond = threading.Condition()
     notified = False
     NetworkTables.initialize(server='10.56.35.2')
-    NetworkTables.addConnectionListener(lambda connected, info: connection_listener(connected, info, cond), immediateNotify=True)
+    NetworkTables.addConnectionListener(lambda connected, info: connection_listener(connected, info, cond),
+                                        immediateNotify=True)
 
     with cond:
         label.setText("Connecting...")
@@ -31,5 +32,5 @@ def connected_to_robot(label: QLabel):
         url = 'http://10.56.35.2'
         status_code = requests.get(url, timeout=(2, 1)).status_code
         return status_code == 200
-    except:
+    except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.RequestException):
         return False

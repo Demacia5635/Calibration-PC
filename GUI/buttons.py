@@ -14,9 +14,10 @@ def calibrate(window: QWidget):
         networktables_handler.connect(window.error)
         dashboard = NetworkTables.getTable("SmartDashboard")
         update_vars()
-        window.start_stream()
+        window.start_stream(0)
     else:
-        window.error.setText("Can't connect!")
+        window.error.setText("Can't connect!.\nEnter a camera stream url, or your camera port (default: 0).")
+        window.enable_input()
 
 
 def add_to_calibrate(window: QWidget):
@@ -31,7 +32,7 @@ def trash(window: QWidget):
     # delete the last data
     if calibration.calibrate_amount > 0:
         calibration.calibrate_amount -= 1
-        calibration.data = calibration.saved_data.copy()
+        calibration.data.pop()
         calibration.update_data()
         window.error.setText("Removed last data!")
     else:
@@ -51,18 +52,25 @@ def save(window: QWidget):
     # saves the data and upload to network tables
     if calibration.calibrate_amount >= 5:
         if networktables_handler.connected_to_robot(window.error):
-            networktables_handler.connect(window.error)
-            dashboard.putNumber("calibration-lower-h", vars.lower[0])
-            dashboard.putNumber("calibration-lower-s", vars.lower[1])
-            dashboard.putNumber("calibration-lower-v", vars.lower[2])
-            dashboard.putNumber("calibration-upper-h", vars.upper[0])
-            dashboard.putNumber("calibration-upper-s", vars.upper[1])
-            dashboard.putNumber("calibration-upper-v", vars.upper[2])
-            window.error.setText("Saved!")
+            window.enable_save_input()
         else:
-            window.error.setText("Can't connect!\nPlease connect to the robot and try again.")
+            window.error.setText("Can't connect!\nMax hsv: " + str(vars.upper) + ", Min HSV: " + str(vars.lower))
     else:
         window.error.setText("You need to add calibration info at least 5 times before saving!")
+
+
+def save_with_input(window: QWidget):
+    input = window.save_input.text()
+    networktables_handler.connect(window.error)
+    dashboard.putNumber("calibration-lower-h-" + input, vars.lower[0])
+    dashboard.putNumber("calibration-lower-s-" + input, vars.lower[1])
+    dashboard.putNumber("calibration-lower-v-" + input, vars.lower[2])
+    dashboard.putNumber("calibration-upper-h-" + input, vars.upper[0])
+    dashboard.putNumber("calibration-upper-s-" + input, vars.upper[1])
+    dashboard.putNumber("calibration-upper-v-" + input, vars.upper[2])
+    window.error.setText("Saved!")
+    window.disable_save_input()
+    window.center()
 
 
 def update_vars():
