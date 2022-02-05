@@ -74,7 +74,7 @@ def get_hsv():
 
     new_mask = np.zeros_like(mask)
     cv2.drawContours(new_mask, np.array([newContour]), 0, 255, thickness=-1)
-    new_mask = cv2.bitwise_xor(new_mask, mask)
+    new_mask = cv2.bitwise_xor(new_mask, mask, mask=new_mask)
 
     for i in range(0, image.shape[0]):
         for j in range(0, image.shape[1]):
