@@ -3,16 +3,15 @@ import os
 import sys
 import time
 
-import requests
-from cv2 import cv2
-
 import image_process
 import numpy as np
+import requests
+from cv2 import cv2
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import (QHBoxLayout, QLabel, QPushButton, QVBoxLayout,
-                             QWidget, QLineEdit, QDesktopWidget)
+from PyQt5.QtWidgets import (QDesktopWidget, QHBoxLayout, QLabel, QLineEdit,
+                             QPushButton, QVBoxLayout, QWidget)
 
 from GUI import buttons, colors
 from GUI.Fonts import fonts
@@ -168,16 +167,7 @@ class HomeScreen(QWidget):
         text: str = self.input.text()
         if text.isnumeric():
             return 'number'
-        else:
-            try:
-                status_code = requests.get(text, timeout=(2, 1)).status_code
-                if status_code == 200:
-                    return 'valid url'
-            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-                return 'cant connect'
-            except requests.exceptions.InvalidURL:
-                return 'invalid'
-        return 'invalid'
+        return 'valid url'
 
     def disable_input(self):
         if not self.input.isEnabled():

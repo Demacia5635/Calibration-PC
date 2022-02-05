@@ -32,7 +32,7 @@ def process_image(cv_img):
         newmask = cv2.dilate(mask, None, iterations=2)
     return oldimage, newmask
 
-def scale_vector(vector, relative_to):
+def scale_vector(vector, relative_to=[0,0]):
     diff = [0,0]
     diff[0] = vector[0] - relative_to[0]
     diff[1] = vector[1] - relative_to[1]
@@ -67,7 +67,7 @@ def get_hsv():
     newContour = []
 
     for row in contour:
-        newContour.append([scale_vector(row[0], center)])
+        newContour.append([scale_vector(row[0], relative_to=center)])
 
     new_mask = np.zeros_like(mask)
     cv2.drawContours(new_mask, np.array([newContour]), 0, 255, thickness=-1)
