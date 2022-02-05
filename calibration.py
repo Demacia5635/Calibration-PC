@@ -25,7 +25,7 @@ def add_info(x, y, window: QWidget):
 
 def add_to_calibrate(window: QWidget):
     min_hsv, max_hsv = image_process.get_hsv()
-    if min_hsv and max_hsv:
+    if (min_hsv and max_hsv) and min_hsv[0] != 300:
         global calibrate_amount
         calibrate_amount += 1
 
