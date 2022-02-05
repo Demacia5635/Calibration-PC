@@ -21,15 +21,16 @@ def mouse_pos(event, window: QWidget, cv_img):
 def process_image(cv_img):
     global video_image
     video_image = cv_img.copy()
-    oldimage = cv_img.copy()
 
     image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
     newmask = None
     if image is not None:
-        image = cv2.GaussianBlur(image, (9, 9), 0)
+        #image = cv2.GaussianBlur(image, (9, 9), 0)
         mask = cv2.inRange(image, vars.lower, vars.upper)
         newmask = cv2.erode(mask, None, iterations=2)
         newmask = cv2.dilate(mask, None, iterations=2)
+
+    oldimage = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
     return oldimage, newmask
 
 def scale_vector(vector, relative_to=[0,0]):
@@ -48,7 +49,7 @@ def in_adding_range(pixel):
 def get_hsv():
     global third_image, video_image
     image = cv2.cvtColor(video_image, cv2.COLOR_BGR2HSV)
-    image = cv2.GaussianBlur(image, (9, 9), 0)
+    #image = cv2.GaussianBlur(image, (9, 9), 0)
     mask = cv2.inRange(image, vars.lower, vars.upper)
     newmask = cv2.erode(mask, None, iterations=2)
     newmask = cv2.dilate(newmask, None, iterations=2)

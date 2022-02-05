@@ -1,11 +1,9 @@
-import contextlib
 import os
 import sys
 import time
 
 import image_process
 import numpy as np
-import requests
 from cv2 import cv2
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
