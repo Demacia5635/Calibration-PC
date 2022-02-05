@@ -33,6 +33,14 @@ def process_image(cv_img):
         newmask = cv2.dilate(mask, kernal, 2)
     return oldimage, newmask
 
+def scale_vector(vector, relative_to):
+    diff = [0,0]
+    diff[0] = vector[0] - relative_to[0]
+    diff[1] = vector[1] - relative_to[1]
+    diff[0] = diff[0] * vars.increase
+    diff[1] = diff[1] * vars.increase
+    return [int(diff[0] + relative_to[0]), int(diff[1] + relative_to[1])]
+
 def in_adding_range(pixel):
     return vars.lower[0] - vars.h_max_diff <= pixel[0] <= vars.upper[0] + vars.h_max_diff and \
         vars.lower[1] - vars.s_max_diff <= pixel[1] <= vars.upper[1] + vars.s_max_diff and \
@@ -61,16 +69,7 @@ def get_hsv():
     newContour = []
 
     for row in contour:
-        vec = [0, 0]
-        vec[0] = row[0][0] - center[0]
-        vec[1] = row[0][1] - center[1]
-        vec[0] = vec[0] * vars.increase
-        vec[1] = vec[1] * vars.increase
-        vec[0] += center[0]
-        vec[1] += center[1]
-        vec[0] = int(vec[0])
-        vec[1] = int(vec[1])
-        newContour.append([vec])
+        newContour.append([scale_vector(row[0], center)])
 
     new_mask = np.zeros_like(mask)
     cv2.drawContours(new_mask, np.array([newContour]), 0, 255, thickness=-1)
