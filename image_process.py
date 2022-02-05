@@ -26,11 +26,10 @@ def process_image(cv_img):
     image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
     newmask = None
     if image is not None:
-        image = cv2.GaussianBlur(image, (5, 5), 0)
+        image = cv2.GaussianBlur(image, (9, 9), 0)
         mask = cv2.inRange(image, vars.lower, vars.upper)
-        kernal = np.ones((5, 5), np.uint8)
-        newmask = cv2.erode(mask, kernal, 2)
-        newmask = cv2.dilate(mask, kernal, 2)
+        newmask = cv2.erode(mask, None, iterations=2)
+        newmask = cv2.dilate(mask, None, iterations=2)
     return oldimage, newmask
 
 def scale_vector(vector, relative_to):
@@ -49,11 +48,10 @@ def in_adding_range(pixel):
 def get_hsv():
     global third_image, video_image
     image = cv2.cvtColor(video_image, cv2.COLOR_BGR2HSV)
-    image = cv2.GaussianBlur(image, (5, 5), 0)
+    image = cv2.GaussianBlur(image, (9, 9), 0)
     mask = cv2.inRange(image, vars.lower, vars.upper)
-    kernal = np.ones((5, 5), np.uint8)
-    newmask = cv2.erode(mask, kernal, 2)
-    newmask = cv2.dilate(newmask, kernal, 2)
+    newmask = cv2.erode(mask, None, iterations=2)
+    newmask = cv2.dilate(newmask, None, iterations=2)
 
     contours, _ = cv2.findContours(newmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
