@@ -3,6 +3,7 @@ import threading
 import requests as requests
 from PyQt5.QtWidgets import QLabel, QWidget
 from networktables import NetworkTables, NetworkTable
+import vars as vars
 
 dashboard: NetworkTable
 
@@ -36,7 +37,6 @@ def connected_to_robot(label: QLabel):
         label.setText("Searching for robot...")
         url = 'http://10.56.35.2'
         status_code = requests.get(url, timeout=(2, 1)).status_code
-        print(status_code)
         return status_code == 200
     except (requests.exceptions.Timeout, requests.exceptions.TooManyRedirects, requests.exceptions.RequestException):
         return False
