@@ -1,4 +1,4 @@
-import cv2
+from cv2 import cv2
 import numpy as np
 from PyQt5.QtWidgets import QWidget
 
@@ -20,6 +20,7 @@ def mouse_pos(event, window: QWidget, cv_img):
 
 def process_image(cv_img):
     global video_image
+    cv_img[0:cv_img.shape[0], cv_img.shape[1]-40:cv_img.shape[1]] = [0, 0, 0]
     video_image = cv_img.copy()
 
     image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)

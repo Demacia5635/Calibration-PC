@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (QDesktopWidget, QHBoxLayout, QLabel, QLineEdit,
 
 from GUI import buttons, colors
 from GUI.Fonts import fonts
+from Utils import networktables_handler
 
 
 def set_button_style(button: QPushButton):
@@ -125,7 +126,7 @@ class HomeScreen(QWidget):
 
         # save input index label:
         self.save_input = QLineEdit()
-        self.save_input.returnPressed.connect(lambda: buttons.save_with_input(self))
+        self.save_input.returnPressed.connect(lambda: networktables_handler.save_with_input(self))
         self.save_input.setText("0")
         self.save_input.setFont(fonts.roboto_bold(20))
         self.save_input.setStyleSheet('color: ' + colors.secondary + ';')  # rgb(48, 63, 159)
@@ -254,7 +255,9 @@ class HomeScreen(QWidget):
         self.display_width = self.video_1.size().width()
         self.display_height = 320
 
-    def start_stream(self, camera_stream=False):
+    def start_stream(self, camera_stream: str):
+        if networktables_handler.connected_to_robot(self.error):
+            networktables_handler.connect(self.error)
         # create the video capture thread
         self.thread = VideoThread(video_stream=self.video_1, camera_stream=camera_stream, window=self, update_image=self.update_image)
         # connect its signal to the update_image slot
