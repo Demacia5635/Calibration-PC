@@ -21,13 +21,13 @@ def set_button_style(button: QPushButton):
             'color: ' + colors.primary_variant + ';' \
             'background-color: ' + colors.secondary + ';' \
             'border-style: outset; border-width: px;' \
-            'border-radius: 15px; border-color: 121212; padding: 4px;' \
+            'border-radius: 18px; border-color: 121212; padding: 8px;' \
             '}' \
             'QPushButton::pressed {' \
             'background-color: ' + colors.secondary_bright + ';' \
             '}'
     button.setStyleSheet(style)
-    button.setFont(fonts.roboto_bold(18))
+    button.setFont(fonts.roboto_bold(16))
 
 
 class HomeScreen(QWidget):
