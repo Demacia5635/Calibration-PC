@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 
@@ -6,11 +7,12 @@ import image_process
 import numpy as np
 from cv2 import cv2
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot, QRect
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (QDesktopWidget, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QVBoxLayout, QWidget)
+                             QPushButton, QVBoxLayout, QWidget, QSlider)
 
+import vars
 from GUI import buttons, colors
 from GUI.Fonts import fonts
 from Utils import networktables_handler
@@ -28,6 +30,83 @@ def set_button_style(button: QPushButton):
             '}'
     button.setStyleSheet(style)
     button.setFont(fonts.roboto_bold(16))
+
+
+def get_vars_hsv_value(mode: str, hsv: str):
+    if hsv == "h":
+        hsv = 0
+    elif hsv == "s":
+        hsv = 1
+    elif hsv == "v":
+        hsv = 2
+    else:
+        return
+    if mode == "lower":
+        startup_value: int = vars.lower[hsv]
+    elif mode == "upper":
+        startup_value: int = vars.upper[hsv]
+    return startup_value
+
+
+def update_value(slider: QSlider, label: QLineEdit, value, mode, hsv):
+    if type(value) == str and not value.isnumeric():
+        value = re.sub("[^0-9]", "", value)
+    if not value:
+        value = 0
+    if int(value) > 255:
+        value = 255
+    elif int(value) < 0:
+        value = 0
+    if hsv == "h":
+        hsv = 0
+    elif hsv == "s":
+        hsv = 1
+    elif hsv == "v":
+        hsv = 2
+
+    if mode == "lower":
+        vars.lower[hsv] = int(value)
+    elif mode == "upper":
+        vars.upper[hsv] = int(value)
+    label.setText(str(value))
+    slider.setValue(int(value))
+
+
+def create_slider_label(hsv: str):
+    label: QLabel = QLabel(hsv.upper() + ":")
+    label.setFont(fonts.roboto(14))
+    label.setStyleSheet('color: ' + colors.primary_bright + ';')
+    label.setContentsMargins(0, 0, 0, 0)
+    return label
+
+
+def create_slider(value_label: QLineEdit, mode: str, hsv: str):
+
+    slider: QSlider = QSlider()
+    slider_style = 'QSlider {' \
+                    'color: ' + colors.error + ';' \
+                    'background-color: ' + colors.error + ';' \
+                    'border-style: outset; border-width: px;' \
+                    'border-radius: 10px; border-color: 121212; padding: 4px;' \
+                    '}'
+    slider.setOrientation(Qt.Horizontal)
+    slider.setMinimum(0)
+    slider.setMaximum(255)
+    slider.setValue(get_vars_hsv_value(mode, hsv))
+    slider.setStyleSheet(slider_style)
+    slider.valueChanged.connect(lambda: update_value(slider, value_label, slider.value(), mode, hsv))
+    value_label.textChanged.connect(lambda: update_value(slider, value_label, value_label.text(), mode, hsv))
+    return slider
+
+
+def create_slider_value_label(mode: str, hsv: str):
+    startup_value: int = get_vars_hsv_value(mode, hsv)
+    value_label: QLineEdit = QLineEdit(str(startup_value))
+    value_label.setFont(fonts.roboto(14))
+    value_label.setMaximumWidth(70)
+    value_label.setAlignment(Qt.AlignHCenter)
+    value_label.setStyleSheet('color: ' + colors.primary_bright + ';')
+    return value_label
 
 
 class HomeScreen(QWidget):
@@ -57,11 +136,20 @@ class HomeScreen(QWidget):
         videos_layout.addWidget(self.video_2)
         videos_layout.addWidget(self.video_3)
 
+        # user layout:
+        user_layout: QHBoxLayout = QHBoxLayout()
+        user_layout.setContentsMargins(0, 30, 0, 0)
+        user_layout.setSpacing(0)
+
         # buttons:
+
+        buttons_layout: QVBoxLayout = QVBoxLayout()
+        buttons_layout.setContentsMargins(0, 0, 0, 0)
+        buttons_layout.setSpacing(0)
 
         # first layout:
         buttons_layout_1: QHBoxLayout = QHBoxLayout()
-        buttons_layout_1.setContentsMargins(400, 0, 400, 0)
+        buttons_layout_1.setContentsMargins(100, 0, 100, 0) # 300, 300
         buttons_layout_1.setSpacing(50)
 
         self.start = QPushButton()
@@ -81,7 +169,7 @@ class HomeScreen(QWidget):
 
         # second layout:
         buttons_layout_2: QHBoxLayout = QHBoxLayout()
-        buttons_layout_2.setContentsMargins(420, 45, 420, 0)
+        buttons_layout_2.setContentsMargins(120, 45, 120, 0) # 320, 320
         buttons_layout_2.setSpacing(100)
 
         self.save = QPushButton()
@@ -135,13 +223,102 @@ class HomeScreen(QWidget):
         self.save_input.setVisible(False)
         self.save_input.setEnabled(False)
 
+        # sliders:
+        left_sliders_layout: QVBoxLayout = QVBoxLayout()
+        left_sliders_layout.setSpacing(25)
+
+        self.min_hsv_text: QLabel = QLabel("Minimum HSV:")
+        self.min_hsv_text.setContentsMargins(0, 0, 0, 20)
+        self.min_hsv_text.setAlignment(Qt.AlignCenter)
+        self.min_hsv_text.setFont(fonts.roboto_bold(18))
+        self.min_hsv_text.setStyleSheet('color: ' + colors.primary_variant + ';')
+
+        self.min_h_layout: QHBoxLayout = QHBoxLayout()
+        self.min_h_layout.setSpacing(30)
+        self.min_h_label: QLabel = create_slider_label("h")
+        self.min_h_value_label: QLineEdit = create_slider_value_label("lower", "h")
+        self.min_h_slider: QSlider = create_slider(self.min_h_value_label, "lower", "h")
+        self.min_h_layout.addWidget(self.min_h_label)
+        self.min_h_layout.addWidget(self.min_h_slider)
+        self.min_h_layout.addWidget(self.min_h_value_label)
+
+        self.min_s_layout: QHBoxLayout = QHBoxLayout()
+        self.min_s_layout.setSpacing(30)
+        self.min_s_label: QLabel = create_slider_label("s")
+        self.min_s_value_label: QLineEdit = create_slider_value_label("lower", "s")
+        self.min_s_slider: QSlider = create_slider(self.min_s_value_label, "lower", "s")
+        self.min_s_layout.addWidget(self.min_s_label)
+        self.min_s_layout.addWidget(self.min_s_slider)
+        self.min_s_layout.addWidget(self.min_s_value_label)
+
+        self.min_v_layout: QHBoxLayout = QHBoxLayout()
+        self.min_v_layout.setSpacing(30)
+        self.min_v_label: QLabel = create_slider_label("v")
+        self.min_v_value_label: QLineEdit = create_slider_value_label("lower", "v")
+        self.min_v_slider: QSlider = create_slider(self.min_v_value_label, "lower", "v")
+        self.min_v_layout.addWidget(self.min_v_label)
+        self.min_v_layout.addWidget(self.min_v_slider)
+        self.min_v_layout.addWidget(self.min_v_value_label)
+
+        right_sliders_layout: QVBoxLayout = QVBoxLayout()
+        right_sliders_layout.setSpacing(25)
+
+        self.max_hsv_text: QLabel = QLabel("Maximum HSV:")
+        self.max_hsv_text.setContentsMargins(0, 0, 0, 20)
+        self.max_hsv_text.setAlignment(Qt.AlignCenter)
+        self.max_hsv_text.setFont(fonts.roboto_bold(18))
+        self.max_hsv_text.setStyleSheet('color: ' + colors.primary_variant + ';')
+
+        self.max_h_layout: QHBoxLayout = QHBoxLayout()
+        self.max_h_layout.setSpacing(30)
+        self.max_h_label: QLabel = create_slider_label("h")
+        self.max_h_value_label: QLineEdit = create_slider_value_label("upper", "h")
+        self.max_h_slider: QSlider = create_slider(self.max_h_value_label, "upper", "h")
+        self.max_h_layout.addWidget(self.max_h_label)
+        self.max_h_layout.addWidget(self.max_h_slider)
+        self.max_h_layout.addWidget(self.max_h_value_label)
+
+        self.max_s_layout: QHBoxLayout = QHBoxLayout()
+        self.max_s_layout.setSpacing(30)
+        self.max_s_label: QLabel = create_slider_label("s")
+        self.max_s_value_label: QLineEdit = create_slider_value_label("upper", "s")
+        self.max_s_slider: QSlider = create_slider(self.max_s_value_label, "upper", "s")
+        self.max_s_layout.addWidget(self.max_s_label)
+        self.max_s_layout.addWidget(self.max_s_slider)
+        self.max_s_layout.addWidget(self.max_s_value_label)
+
+        self.max_v_layout: QHBoxLayout = QHBoxLayout()
+        self.max_v_layout.setSpacing(30)
+        self.max_v_label: QLabel = create_slider_label("v")
+        self.max_v_value_label: QLineEdit = create_slider_value_label("lower", "v")
+        self.max_v_slider: QSlider = create_slider(self.max_v_value_label, "lower", "v")
+        self.max_v_layout.addWidget(self.max_v_label)
+        self.max_v_layout.addWidget(self.max_v_slider)
+        self.max_v_layout.addWidget(self.max_v_value_label)
+
         # layouts:
+        buttons_layout.addLayout(buttons_layout_1)
+        buttons_layout.addLayout(buttons_layout_2)
+
+        left_sliders_layout.addWidget(self.min_hsv_text)
+        left_sliders_layout.addLayout(self.min_h_layout)
+        left_sliders_layout.addLayout(self.min_s_layout)
+        left_sliders_layout.addLayout(self.min_v_layout)
+
+        right_sliders_layout.addWidget(self.max_hsv_text)
+        right_sliders_layout.addLayout(self.max_h_layout)
+        right_sliders_layout.addLayout(self.max_s_layout)
+        right_sliders_layout.addLayout(self.max_v_layout)
+
+        user_layout.addLayout(left_sliders_layout)
+        user_layout.addLayout(buttons_layout)
+        user_layout.addLayout(right_sliders_layout)
+
         v_box = QVBoxLayout()
         v_box.addStretch()
         v_box.addWidget(title)
         v_box.addLayout(videos_layout)
-        v_box.addLayout(buttons_layout_1)
-        v_box.addLayout(buttons_layout_2)
+        v_box.addLayout(user_layout)
         v_box.addWidget(self.error)
         v_box.addWidget(self.input)
         v_box.addWidget(self.save_input)
@@ -256,7 +433,7 @@ class HomeScreen(QWidget):
         self.display_height = 320
 
     def start_stream(self, camera_stream: str):
-        if networktables_handler.connected_to_robot(self.error):
+        if networktables_handler.connected_to_robot(self.error, True):
             networktables_handler.connect(self.error)
         # create the video capture thread
         self.thread = VideoThread(video_stream=self.video_1, camera_stream=camera_stream, window=self, update_image=self.update_image)

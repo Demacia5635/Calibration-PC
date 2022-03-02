@@ -42,7 +42,7 @@ def discard(window: QWidget):
 
 def save(window: QWidget):
     # saves the data and upload to network tables
-    if networktables_handler.connected_to_robot(window.error):
+    if networktables_handler.connected_to_robot(window.error, False):
         window.enable_save_input()
     else:
         window.error.setText("Can't connect!\nMax hsv: " + str(vars.upper) + ", Min HSV: " + str(vars.lower))

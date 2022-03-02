@@ -32,9 +32,10 @@ def connection_listener(connected, info, cond):
         cond.notify()
 
 
-def connected_to_robot(label: QLabel):
+def connected_to_robot(label: QLabel, output=True):
     try:
-        label.setText("Searching for robot...")
+        if output:
+            label.setText("Searching for robot...")
         url = 'http://10.56.35.2'
         status_code = requests.get(url, timeout=(2, 1)).status_code
         return status_code == 200
