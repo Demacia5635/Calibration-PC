@@ -7,6 +7,8 @@ import vars
 
 data = []
 
+backups = []
+
 
 def add_info(x, y, window: QWidget):
 

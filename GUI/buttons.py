@@ -54,6 +54,14 @@ def save(window: QWidget):
 
 
 def backup(window: QWidget):
-    calibration.data.append((vars.lower.copy(), vars.upper.copy()))
-    window.update_sliders()
+    calibration.backups.append((vars.lower.copy(), vars.upper.copy()))
     window.error.setText("Data stored.")
+
+
+def restore_backup(window: QWidget):
+    if len(calibration.backups) > 0:
+        min_hsv, max_hsv = calibration.backups.pop()
+        window.update_sliders(min_hsv, max_hsv)
+        window.error.setText("Backup restored.")
+    else:
+        window.error.setText("No available backups found!")

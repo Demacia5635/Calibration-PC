@@ -95,7 +95,7 @@ def create_slider(value_label: QLineEdit, mode: str, hsv: str):
     slider.setValue(get_vars_hsv_value(mode, hsv))
     slider.setStyleSheet(slider_style)
     slider.valueChanged.connect(lambda: update_value(slider, value_label, slider.value(), mode, hsv))
-    # value_label.textChanged.connect(lambda: update_value(slider, value_label, value_label.text(), mode, hsv))
+    value_label.textChanged.connect(lambda: update_value(slider, value_label, value_label.text(), mode, hsv))
     return slider
 
 
@@ -144,11 +144,12 @@ class HomeScreen(QWidget):
         # buttons:
 
         buttons_layout: QVBoxLayout = QVBoxLayout()
+        buttons_layout.setContentsMargins(70, 0, 70, 0)
         buttons_layout.setSpacing(0)
 
         # first layout:
         buttons_layout_1: QHBoxLayout = QHBoxLayout()
-        buttons_layout_1.setContentsMargins(100, 0, 100, 0) # 300, 300
+        buttons_layout_1.setContentsMargins(0, 0, 0, 0) # 300, 300
         buttons_layout_1.setSpacing(50)
 
         self.start = QPushButton()
@@ -169,13 +170,19 @@ class HomeScreen(QWidget):
         # second layout:
         buttons_layout_2: QHBoxLayout = QHBoxLayout()
         buttons_layout_2.setContentsMargins(0, 45, 0, 0) # 320, 320 # 120, 120
-        buttons_layout_2.setSpacing(100)
+        buttons_layout_2.setSpacing(50)
 
         self.backup = QPushButton()
         self.backup.setObjectName("backup_button")
         self.backup.setText("Backup")
         set_button_style(self.backup)
         self.backup.clicked.connect(lambda: buttons.backup(self))
+
+        self.restore = QPushButton()
+        self.restore.setObjectName("restore_button")
+        self.restore.setText("Restore")
+        set_button_style(self.restore)
+        self.restore.clicked.connect(lambda: buttons.restore_backup(self))
 
         self.save = QPushButton()
         self.save.setObjectName("save_button")
@@ -195,7 +202,8 @@ class HomeScreen(QWidget):
         set_button_style(self.discard)
         self.discard.clicked.connect(lambda: buttons.discard(self))
 
-        buttons_layout_2.addWidget(self.backup)
+        buttons_layout_1.addWidget(self.backup)
+        buttons_layout_2.addWidget(self.restore)
         buttons_layout_2.addWidget(self.save)
         buttons_layout_2.addWidget(self.undo)
         buttons_layout_2.addWidget(self.discard)
@@ -231,7 +239,7 @@ class HomeScreen(QWidget):
 
         # sliders:
         left_sliders_layout: QVBoxLayout = QVBoxLayout()
-        left_sliders_layout.setContentsMargins(0, 0, 50, 0)
+        left_sliders_layout.setContentsMargins(0, 0, 0, 0)
         left_sliders_layout.setSpacing(25)
 
         self.min_hsv_text: QLabel = QLabel("Minimum HSV:")
@@ -268,7 +276,7 @@ class HomeScreen(QWidget):
         self.min_v_layout.addWidget(self.min_v_value_label)
 
         right_sliders_layout: QVBoxLayout = QVBoxLayout()
-        right_sliders_layout.setContentsMargins(50, 0, 0, 0)
+        right_sliders_layout.setContentsMargins(0, 0, 0, 0)
         right_sliders_layout.setSpacing(25)
 
         self.max_hsv_text: QLabel = QLabel("Maximum HSV:")
@@ -342,21 +350,21 @@ class HomeScreen(QWidget):
         self.show()
         self.center()
 
-    def update_sliders(self):
-        print(vars.lower, vars.upper)
-        self.min_h_slider.setValue(vars.lower[0])
-        self.min_h_value_label.setText(str(vars.lower[0]))
-        self.min_s_slider.setValue(vars.lower[1])
-        self.min_s_value_label.setText(str(vars.lower[1]))
-        self.min_v_slider.setValue(vars.lower[2])
-        self.min_v_value_label.setText(str(vars.lower[2]))
+    def update_sliders(self, lower=vars.lower, upper=vars.upper):
+        print(lower, upper)
+        self.min_h_slider.setValue(lower[0])
+        self.min_h_value_label.setText(str(lower[0]))
+        self.min_s_slider.setValue(lower[1])
+        self.min_s_value_label.setText(str(lower[1]))
+        self.min_v_slider.setValue(lower[2])
+        self.min_v_value_label.setText(str(lower[2]))
 
-        self.max_h_slider.setValue(vars.upper[0])
-        self.max_h_value_label.setText(str(vars.upper[0]))
-        self.max_s_slider.setValue(vars.upper[1])
-        self.max_s_value_label.setText(str(vars.upper[1]))
-        self.max_v_slider.setValue(vars.upper[2])
-        self.max_v_value_label.setText(str(vars.upper[2]))
+        self.max_h_slider.setValue(upper[0])
+        self.max_h_value_label.setText(str(upper[0]))
+        self.max_s_slider.setValue(upper[1])
+        self.max_s_value_label.setText(str(upper[1]))
+        self.max_v_slider.setValue(upper[2])
+        self.max_v_value_label.setText(str(upper[2]))
 
     def enable_input(self):
         self.input.setVisible(True)
