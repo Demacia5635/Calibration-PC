@@ -351,7 +351,6 @@ class HomeScreen(QWidget):
         self.center()
 
     def update_sliders(self, lower=vars.lower, upper=vars.upper):
-        print(lower, upper)
         self.min_h_slider.setValue(lower[0])
         self.min_h_value_label.setText(str(lower[0]))
         self.min_s_slider.setValue(lower[1])
