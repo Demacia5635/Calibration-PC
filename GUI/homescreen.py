@@ -48,7 +48,7 @@ def get_vars_hsv_value(mode: str, hsv: str):
     return startup_value
 
 
-def update_value(slider: QSlider, label: QLineEdit, value, mode, hsv):
+def update_value(slider: QSlider, label: QLineEdit, value, mode: str, hsv: str):
     if type(value) == str and not value.isnumeric():
         value = re.sub("[^0-9]", "", value)
     if not value:
@@ -95,7 +95,7 @@ def create_slider(value_label: QLineEdit, mode: str, hsv: str):
     slider.setValue(get_vars_hsv_value(mode, hsv))
     slider.setStyleSheet(slider_style)
     slider.valueChanged.connect(lambda: update_value(slider, value_label, slider.value(), mode, hsv))
-    value_label.textChanged.connect(lambda: update_value(slider, value_label, value_label.text(), mode, hsv))
+    # value_label.textChanged.connect(lambda: update_value(slider, value_label, value_label.text(), mode, hsv))
     return slider
 
 
@@ -138,13 +138,12 @@ class HomeScreen(QWidget):
 
         # user layout:
         user_layout: QHBoxLayout = QHBoxLayout()
-        user_layout.setContentsMargins(0, 30, 0, 0)
+        user_layout.setContentsMargins(0, 0, 0, 0)
         user_layout.setSpacing(0)
 
         # buttons:
 
         buttons_layout: QVBoxLayout = QVBoxLayout()
-        buttons_layout.setContentsMargins(0, 0, 0, 0)
         buttons_layout.setSpacing(0)
 
         # first layout:
@@ -169,8 +168,14 @@ class HomeScreen(QWidget):
 
         # second layout:
         buttons_layout_2: QHBoxLayout = QHBoxLayout()
-        buttons_layout_2.setContentsMargins(120, 45, 120, 0) # 320, 320
+        buttons_layout_2.setContentsMargins(0, 45, 0, 0) # 320, 320 # 120, 120
         buttons_layout_2.setSpacing(100)
+
+        self.backup = QPushButton()
+        self.backup.setObjectName("backup_button")
+        self.backup.setText("Backup")
+        set_button_style(self.backup)
+        self.backup.clicked.connect(lambda: buttons.backup(self))
 
         self.save = QPushButton()
         self.save.setObjectName("save_button")
@@ -190,6 +195,7 @@ class HomeScreen(QWidget):
         set_button_style(self.discard)
         self.discard.clicked.connect(lambda: buttons.discard(self))
 
+        buttons_layout_2.addWidget(self.backup)
         buttons_layout_2.addWidget(self.save)
         buttons_layout_2.addWidget(self.undo)
         buttons_layout_2.addWidget(self.discard)
@@ -198,7 +204,7 @@ class HomeScreen(QWidget):
         self.error = QLabel()
         self.error.setFont(fonts.roboto_bold(26))
         self.error.setStyleSheet('color: ' + colors.error + ';')  # rgb(48, 63, 159)
-        self.error.setContentsMargins(0, 80, 0, 0)
+        self.error.setContentsMargins(0, 30, 0, 0)
         self.error.setAlignment(Qt.AlignCenter)
 
         # input label:
@@ -225,6 +231,7 @@ class HomeScreen(QWidget):
 
         # sliders:
         left_sliders_layout: QVBoxLayout = QVBoxLayout()
+        left_sliders_layout.setContentsMargins(0, 0, 50, 0)
         left_sliders_layout.setSpacing(25)
 
         self.min_hsv_text: QLabel = QLabel("Minimum HSV:")
@@ -261,6 +268,7 @@ class HomeScreen(QWidget):
         self.min_v_layout.addWidget(self.min_v_value_label)
 
         right_sliders_layout: QVBoxLayout = QVBoxLayout()
+        right_sliders_layout.setContentsMargins(50, 0, 0, 0)
         right_sliders_layout.setSpacing(25)
 
         self.max_hsv_text: QLabel = QLabel("Maximum HSV:")
@@ -290,8 +298,8 @@ class HomeScreen(QWidget):
         self.max_v_layout: QHBoxLayout = QHBoxLayout()
         self.max_v_layout.setSpacing(30)
         self.max_v_label: QLabel = create_slider_label("v")
-        self.max_v_value_label: QLineEdit = create_slider_value_label("lower", "v")
-        self.max_v_slider: QSlider = create_slider(self.max_v_value_label, "lower", "v")
+        self.max_v_value_label: QLineEdit = create_slider_value_label("upper", "v")
+        self.max_v_slider: QSlider = create_slider(self.max_v_value_label, "upper", "v")
         self.max_v_layout.addWidget(self.max_v_label)
         self.max_v_layout.addWidget(self.max_v_slider)
         self.max_v_layout.addWidget(self.max_v_value_label)
@@ -300,12 +308,12 @@ class HomeScreen(QWidget):
         buttons_layout.addLayout(buttons_layout_1)
         buttons_layout.addLayout(buttons_layout_2)
 
-        left_sliders_layout.addWidget(self.min_hsv_text)
+        # left_sliders_layout.addWidget(self.min_hsv_text)
         left_sliders_layout.addLayout(self.min_h_layout)
         left_sliders_layout.addLayout(self.min_s_layout)
         left_sliders_layout.addLayout(self.min_v_layout)
 
-        right_sliders_layout.addWidget(self.max_hsv_text)
+        # right_sliders_layout.addWidget(self.max_hsv_text)
         right_sliders_layout.addLayout(self.max_h_layout)
         right_sliders_layout.addLayout(self.max_s_layout)
         right_sliders_layout.addLayout(self.max_v_layout)
@@ -333,6 +341,22 @@ class HomeScreen(QWidget):
 
         self.show()
         self.center()
+
+    def update_sliders(self):
+        print(vars.lower, vars.upper)
+        self.min_h_slider.setValue(vars.lower[0])
+        self.min_h_value_label.setText(str(vars.lower[0]))
+        self.min_s_slider.setValue(vars.lower[1])
+        self.min_s_value_label.setText(str(vars.lower[1]))
+        self.min_v_slider.setValue(vars.lower[2])
+        self.min_v_value_label.setText(str(vars.lower[2]))
+
+        self.max_h_slider.setValue(vars.upper[0])
+        self.max_h_value_label.setText(str(vars.upper[0]))
+        self.max_s_slider.setValue(vars.upper[1])
+        self.max_s_value_label.setText(str(vars.upper[1]))
+        self.max_v_slider.setValue(vars.upper[2])
+        self.max_v_value_label.setText(str(vars.upper[2]))
 
     def enable_input(self):
         self.input.setVisible(True)
@@ -406,6 +430,7 @@ class HomeScreen(QWidget):
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
+        # self.center()
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
@@ -484,9 +509,10 @@ class VideoThread(QThread):
 
         self.camera_stream = camera_stream
 
-        self.window: QWidget = window
+        self.window: HomeScreen = window
 
     def run(self):
+        self.window.error.setText("")
         self.video_stream.setText("Connecting...")
         capture = cv2.VideoCapture(self.camera_stream)
         self.window.center()

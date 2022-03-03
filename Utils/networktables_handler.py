@@ -1,9 +1,9 @@
 import threading
-
 import requests as requests
 from PyQt5.QtWidgets import QLabel, QWidget
 from networktables import NetworkTables, NetworkTable
 import vars as vars
+
 
 dashboard: NetworkTable
 
