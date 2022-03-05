@@ -12,9 +12,6 @@ upper = np.array([30, 255, 255])
 lower_default = lower
 upper_default = upper
 
-lower_backup = lower
-upper_backup = upper
-
 
 h_max_diff = 5
 s_max_diff = 10
