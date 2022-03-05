@@ -43,7 +43,7 @@ def update_data(window: QWidget):
         vars.lower = vars.lower_default
         vars.upper = vars.upper_default
 
-    window.update_sliders()
+    window.update_sliders(vars.lower, vars.upper)
 
     print('--------------------------')
     print("lower: " + str(vars.lower))

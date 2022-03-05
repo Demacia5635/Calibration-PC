@@ -28,7 +28,7 @@ def undo(window: QWidget):
         if len(calibration.data) > 0:
             calibration.update_data(window)
         else:
-            window.update_sliders()
+            window.update_sliders(vars.lower, vars.upper)
         window.error.setText("Removed last data!")
     else:
         window.error.setText("Can't undo. No data found!")
